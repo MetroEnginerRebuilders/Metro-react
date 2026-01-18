@@ -1,0 +1,77 @@
+import { Route, Routes } from 'react-router-dom'
+import './App.css'
+import { ToastContainer } from 'react-toastify'
+import Login from './Pages/Login/Login'
+import Navbar from './Components/Navbar'
+import ChangePassword from './Pages/ChangePassword/ChangePassword'
+import Dashboard from './Pages/Sidebar/Dashboard/Dashboard'
+import ProtectedRoute from './Components/ProtectedRoute'
+import Search from './Pages/Sidebar/Search/Search'
+import MonthlyReports from './Pages/Sidebar/MonthlyReports/MonthlyReports'
+import Stock from './Pages/Sidebar/Stock/Stock'
+import PurchaseStock from './Pages/Sidebar/PurchaseStock/PurchaseStock'
+import ReturnStock from './Pages/Sidebar/ReturnStock/ReturnStock'
+import Jobs from './Pages/Sidebar/Jobs/Jobs'
+import TransactionLogs from './Pages/Sidebar/TransactionLogs/TransactionLogs'
+import Income from './Pages/Sidebar/Income/Income'
+import Expense from './Pages/Sidebar/Expense/Expense'
+import Invoice from './Pages/Sidebar/Invoice/Invoice'
+import Payment from './Pages/Sidebar/Payment/Payment'
+import Statement from './Pages/Sidebar/Statement/Statement'
+import Account from './Pages/ProtectedTopbar/Account/Account'
+import AccountTransfer from './Pages/ProtectedTopbar/AccountTransfer/AccountTransfer'
+import Customer from './Pages/ProtectedTopbar/Customer/Customer'
+import Model from './Pages/ProtectedTopbar/Model/Model'
+import Company from './Pages/ProtectedTopbar/Company/Company'
+import Works from './Pages/ProtectedTopbar/Works/WorkList/Works'
+import StaffDetails from './Pages/ProtectedTopbar/StaffDetails/StaffDetails'
+import StaffSalary from './Pages/ProtectedTopbar/StaffSalary/StaffSalary'
+import ShopList from './Pages/ProtectedTopbar/Shops/ShopList/ShopList'
+import SpareList from './Pages/ProtectedTopbar/Spare/SpareList/SpareList'
+import MasterData from './Pages/Sidebar/MasterData/MasterData'
+
+
+function App() {
+
+  return (
+    <div>
+      <Navbar></Navbar>
+      <Routes>
+        <Route path="/login" element={<Login />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+
+        <Route element={<ProtectedRoute />}>
+          {/* Sidebar routes  */}
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/search" element={<Search />} />
+          <Route path="/master" element={<MasterData/>} />
+          <Route path="/monthly-reports" element={<MonthlyReports />} />
+          <Route path="/stock/purchase" element={<PurchaseStock />} />
+          <Route path="/stock/return" element={<ReturnStock />} />
+          <Route path="/stock/view" element={<Stock />} />
+          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/transaction-logs" element={<TransactionLogs />} />
+          <Route path="/income" element={<Income />} />
+          <Route path="/expenditure" element={<Expense />} />
+          <Route path="/invoice" element={<Invoice />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/statement" element={<Statement />} />
+          {/* Protected topbar  */}
+          <Route path="/admin/account" element={<Account />} />
+          <Route path="/admin/transfer" element={<AccountTransfer />} />
+          <Route path="/customer" element={<Customer />} />
+          <Route path="/model" element={<Model />} />
+          <Route path="/company" element={<Company />} />
+          <Route path="/spare" element={<SpareList />} />
+          <Route path="/shops" element={<ShopList />} />
+          <Route path="/works" element={<Works />} />
+          <Route path="/staff/details" element={<StaffDetails />} />
+          <Route path="/staff/salary" element={<StaffSalary />} />
+        </Route>
+      </Routes>
+      <ToastContainer />
+    </div>
+  )
+}
+
+export default App

@@ -20,8 +20,7 @@ import Payment from './Pages/Sidebar/Payment/Payment'
 import Statement from './Pages/Sidebar/Statement/Statement'
 import Account from './Pages/ProtectedTopbar/Account/Account'
 import AccountTransfer from './Pages/ProtectedTopbar/AccountTransfer/AccountTransfer'
-import Customer from './Pages/ProtectedTopbar/Customer/Customer'
-import Model from './Pages/ProtectedTopbar/Model/Model'
+import Model from './Pages/ProtectedTopbar/Model/ModelList/Model'
 import Company from './Pages/ProtectedTopbar/Company/Company'
 import Works from './Pages/ProtectedTopbar/Works/WorkList/Works'
 import StaffDetails from './Pages/ProtectedTopbar/StaffDetails/StaffDetails'
@@ -29,7 +28,7 @@ import StaffSalary from './Pages/ProtectedTopbar/StaffSalary/StaffSalary'
 import ShopList from './Pages/ProtectedTopbar/Shops/ShopList/ShopList'
 import SpareList from './Pages/ProtectedTopbar/Spare/SpareList/SpareList'
 import MasterData from './Pages/Sidebar/MasterData/MasterData'
-
+import Customer from './Pages/ProtectedTopbar/Customer/CustomerList/Customer'
 
 function App() {
 

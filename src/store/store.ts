@@ -10,6 +10,12 @@ import editShop from "../Pages/ProtectedTopbar/Shops/EditShop/EditShop.slice.ts"
 import sparelist from "../Pages/ProtectedTopbar/Spare/SpareList/SpareList.slice.ts";
 import createSpare from "../Pages/ProtectedTopbar/Spare/CreateSpare/CreateSpare.slice.ts";
 import editSpare from "../Pages/ProtectedTopbar/Spare/EditSpare/EditSpare.slice.ts";
+import customerlist from "../Pages/ProtectedTopbar/Customer/CustomerList/CustomerList.slice.ts";
+import createCustomer from "../Pages/ProtectedTopbar/Customer/CreateCustomer/CreateCustomer.slice.ts";
+import editCustomer from "../Pages/ProtectedTopbar/Customer/EditCustomer/EditCustomer.slice.ts";
+import modellist from "../Pages/ProtectedTopbar/Model/ModelList/ModelList.slice.ts";
+import createModel from "../Pages/ProtectedTopbar/Model/CreateModel/CreateModel.slice.ts";
+import editModel from "../Pages/ProtectedTopbar/Model/EditModel/EditModel.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -23,7 +29,13 @@ export const store = configureStore({
    editShop,
    sparelist,
    createSpare,
-   editSpare
+   editSpare,
+   customerlist,
+   createCustomer,
+   editCustomer,
+   modellist,
+   createModel,
+   editModel
   },
 });
 

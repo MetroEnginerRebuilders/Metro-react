@@ -1,11 +1,12 @@
 import {
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
   TextField,
   CircularProgress,
+  IconButton,
+  Box,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -15,6 +16,7 @@ import type { AppDispatch, RootState } from "../../../../store/store";
 import { setField, setFormData, resetForm } from "./EditModel.slice";
 import { updateModelApi } from "../../../../service/model";
 import type { Model, EditModelState } from "../../../../type/model";
+import { FiX } from "react-icons/fi";
 
 interface EditModelProps {
   open: boolean;
@@ -86,7 +88,17 @@ const EditModel = ({ open, onClose, model }: EditModelProps) => {
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth>
-      <DialogTitle>Edit Model</DialogTitle>
+      <Box display="flex" alignItems="center" justifyContent="space-between">
+          <span>Edit Model</span>
+          <IconButton
+            onClick={handleClose}
+            disabled={loading}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <FiX />
+          </IconButton>
+        </Box>
       <DialogContent>
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <TextField

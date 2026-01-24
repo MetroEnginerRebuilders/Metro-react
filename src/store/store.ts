@@ -19,6 +19,9 @@ import editModel from "../Pages/ProtectedTopbar/Model/EditModel/EditModel.slice.
 import bankAccountList from "../Pages/ProtectedTopbar/BankAccount/BankAccountList/BankAccountList.slice.ts";
 import createBankAccount from "../Pages/ProtectedTopbar/BankAccount/CreateBankAccount/CreateBankAccount.slice.ts";
 import editBankAccount from "../Pages/ProtectedTopbar/BankAccount/EditBankAccount/EditBankAccount.slice.ts";
+import companyList from "../Pages/ProtectedTopbar/Company/CompanyList/CompanyList.slice.ts";
+import createCompany from "../Pages/ProtectedTopbar/Company/CreateCompany/CreateCompany.slice.ts";
+import editCompany from "../Pages/ProtectedTopbar/Company/EditCompany/EditCompany.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -41,7 +44,10 @@ export const store = configureStore({
    editModel,
    bankAccountList,
    createBankAccount,
-   editBankAccount
+   editBankAccount,
+   companyList,
+   createCompany,
+   editCompany
   },
 });
 

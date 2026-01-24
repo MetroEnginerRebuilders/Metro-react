@@ -18,7 +18,6 @@ import Expense from './Pages/Sidebar/Expense/Expense'
 import Invoice from './Pages/Sidebar/Invoice/Invoice'
 import Payment from './Pages/Sidebar/Payment/Payment'
 import Statement from './Pages/Sidebar/Statement/Statement'
-import Account from './Pages/ProtectedTopbar/Account/Account'
 import AccountTransfer from './Pages/ProtectedTopbar/AccountTransfer/AccountTransfer'
 import Model from './Pages/ProtectedTopbar/Model/ModelList/Model'
 import Company from './Pages/ProtectedTopbar/Company/Company'
@@ -29,6 +28,7 @@ import ShopList from './Pages/ProtectedTopbar/Shops/ShopList/ShopList'
 import SpareList from './Pages/ProtectedTopbar/Spare/SpareList/SpareList'
 import MasterData from './Pages/Sidebar/MasterData/MasterData'
 import Customer from './Pages/ProtectedTopbar/Customer/CustomerList/Customer'
+import BankAccount from './Pages/ProtectedTopbar/BankAccount/BankAccountList/BankAccount'
 
 function App() {
 
@@ -56,7 +56,7 @@ function App() {
           <Route path="/payment" element={<Payment />} />
           <Route path="/statement" element={<Statement />} />
           {/* Protected topbar  */}
-          <Route path="/admin/account" element={<Account />} />
+          <Route path="/admin/account" element={<BankAccount />} />
           <Route path="/admin/transfer" element={<AccountTransfer />} />
           <Route path="/customer" element={<Customer />} />
           <Route path="/model" element={<Model />} />

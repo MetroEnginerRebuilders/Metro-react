@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { BankAccount, BankAccountFormData, BankAccountApiResponse, GetBankAccountListParams } from "../type/bankAccount";
+import type { BankAccount, BankAccountFormData, BankAccountApiResponse, GetBankAccountListParams, AccountTransferFormData, AccountTransferApiResponse } from "../type/bankAccount";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -37,6 +37,16 @@ export const updateBankAccountApi = async (id: string, data: BankAccountFormData
 export const deleteBankAccountApi = async (id: string): Promise<BankAccountApiResponse<null>> => {
   const token = sessionStorage.getItem("token");
   const response = await axios.delete(`${BASE_URL}/bank-account/${id}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const transferBankAccountApi = async (data: AccountTransferFormData): Promise<AccountTransferApiResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.post(`${BASE_URL}/bank-account/transfer`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

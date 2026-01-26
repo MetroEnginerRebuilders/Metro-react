@@ -21,7 +21,7 @@ import Statement from './Pages/Sidebar/Statement/Statement'
 import AccountTransfer from './Pages/ProtectedTopbar/AccountTransfer/AccountTransfer'
 import Model from './Pages/ProtectedTopbar/Model/ModelList/Model'
 import Works from './Pages/ProtectedTopbar/Works/WorkList/Works'
-import StaffDetails from './Pages/ProtectedTopbar/StaffDetails/StaffDetails'
+import StaffDetails from './Pages/ProtectedTopbar/StaffDetails/StaffList/StaffDetails'
 import StaffSalary from './Pages/ProtectedTopbar/StaffSalary/StaffSalary'
 import ShopList from './Pages/ProtectedTopbar/Shops/ShopList/ShopList'
 import SpareList from './Pages/ProtectedTopbar/Spare/SpareList/SpareList'
@@ -29,6 +29,7 @@ import MasterData from './Pages/Sidebar/MasterData/MasterData'
 import Customer from './Pages/ProtectedTopbar/Customer/CustomerList/Customer'
 import BankAccount from './Pages/ProtectedTopbar/BankAccount/BankAccountList/BankAccount'
 import Company from './Pages/ProtectedTopbar/Company/CompanyList/Company'
+import CreateStaffSalary from './Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary'
 
 function App() {
 
@@ -66,6 +67,7 @@ function App() {
           <Route path="/works" element={<Works />} />
           <Route path="/staff/details" element={<StaffDetails />} />
           <Route path="/staff/salary" element={<StaffSalary />} />
+          <Route path="/staff-salary/create" element={<CreateStaffSalary />} />
         </Route>
       </Routes>
       <ToastContainer />

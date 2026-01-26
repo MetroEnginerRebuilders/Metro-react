@@ -22,6 +22,13 @@ import editBankAccount from "../Pages/ProtectedTopbar/BankAccount/EditBankAccoun
 import companyList from "../Pages/ProtectedTopbar/Company/CompanyList/CompanyList.slice.ts";
 import createCompany from "../Pages/ProtectedTopbar/Company/CreateCompany/CreateCompany.slice.ts";
 import editCompany from "../Pages/ProtectedTopbar/Company/EditCompany/EditCompany.slice.ts";
+import accountTransfer from "../Pages/ProtectedTopbar/AccountTransfer/AccountTransfer.slice.ts";
+import staffList from "../Pages/ProtectedTopbar/StaffDetails/StaffList/StaffList.slice.ts";
+import createStaff from "../Pages/ProtectedTopbar/StaffDetails/CreateStaff/CreateStaff.slice.ts";
+import editStaff from "../Pages/ProtectedTopbar/StaffDetails/EditStaff/EditStaff.slice.ts";
+import staffSalaryList from "../Pages/ProtectedTopbar/StaffSalary/StaffSalaryList.slice.ts";
+import createStaffSalary from "../Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary.slice.ts";
+import editStaffSalary from "../Pages/ProtectedTopbar/StaffSalary/EditStaffSalary.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -47,7 +54,14 @@ export const store = configureStore({
    editBankAccount,
    companyList,
    createCompany,
-   editCompany
+   editCompany,
+   accountTransfer,
+   staffList,
+   createStaff,
+   editStaff,
+   staffSalaryList,
+   createStaffSalary,
+   editStaffSalary
   },
 });
 

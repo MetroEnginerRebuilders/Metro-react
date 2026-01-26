@@ -63,3 +63,23 @@ export interface GetBankAccountListParams {
   limit?: number;
   search?: string;
 }
+
+export interface AccountTransferFormData {
+  fromAccountId: string;
+  toAccountId: string;
+  amount: string;
+  transferDate: string;
+}
+
+export interface AccountTransferState {
+  from_account_id: string;
+  to_account_id: string;
+  amount: string;
+  transfer_date: string;
+}
+
+export interface AccountTransferApiResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}

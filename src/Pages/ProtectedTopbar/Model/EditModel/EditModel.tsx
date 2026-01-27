@@ -1,5 +1,6 @@
 import {
   Dialog,
+  DialogTitle,
   DialogContent,
   DialogActions,
   Button,
@@ -88,7 +89,8 @@ const EditModel = ({ open, onClose, model }: EditModelProps) => {
 
   return (
     <Dialog open={open} maxWidth="sm" fullWidth>
-      <Box display="flex" alignItems="center" justifyContent="space-between">
+      <DialogTitle>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
           <span>Edit Model</span>
           <IconButton
             onClick={handleClose}
@@ -99,6 +101,7 @@ const EditModel = ({ open, onClose, model }: EditModelProps) => {
             <FiX />
           </IconButton>
         </Box>
+      </DialogTitle>
       <DialogContent>
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <TextField

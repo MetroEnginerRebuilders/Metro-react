@@ -5,15 +5,11 @@ import {
   DialogActions,
   Button,
   TextField,
-  CircularProgress,
   IconButton,
   Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
+  CircularProgress,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
@@ -25,7 +21,7 @@ import type { StaffSalary, EditStaffSalaryState } from "../../../type/staffSalar
 import type { Staff } from "../../../type/staff";
 import type { BankAccount } from "../../../type/bankAccount";
 import type { SalaryType } from "../../../type/salaryType";
-import { formatCurrency } from "../../../utils/formatters";
+import SearchableSelect from "../../../Components/SearchableSelect";
 
 interface EditStaffSalaryProps {
   open: boolean;
@@ -73,6 +69,31 @@ const EditStaffSalary = ({
   const handleChange = (field: keyof EditStaffSalaryState, value: string) => {
     dispatch(setField({ field, value }));
   };
+
+  // Prepare options for SearchableSelect
+  const staffOptions = useMemo(() => 
+    staffList.map((staff) => ({
+      value: staff.staff_id,
+      label: staff.staff_name,
+    })),
+    [staffList]
+  );
+
+  const bankAccountOptions = useMemo(() =>
+    bankAccounts.map((account) => ({
+      value: account.bank_account_id,
+      label: `${account.account_name} - ${account.account_number}`,
+    })),
+    [bankAccounts]
+  );
+
+  const salaryTypeOptions = useMemo(() =>
+    salaryTypes.map((type) => ({
+      value: type.salary_type_id,
+      label: type.salary_type,
+    })),
+    [salaryTypes]
+  );
 
   const handleSubmit = async () => {
     if (!salary) return;
@@ -184,53 +205,27 @@ const EditStaffSalary = ({
       </DialogTitle>
       <DialogContent>
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "16px" }}>
-          <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-            <InputLabel>Staff</InputLabel>
-            <Select
-              value={staff_id}
-              onChange={(e) => handleChange("staff_id", e.target.value)}
-              label="Staff"
-            >
-              {loadingDropdowns ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                </MenuItem>
-              ) : staffList.length === 0 ? (
-                <MenuItem disabled>No active staff available</MenuItem>
-              ) : (
-                staffList.map((staff) => (
-                  <MenuItem key={staff.staff_id} value={staff.staff_id}>
-                    {staff.staff_name} - ₹{formatCurrency(staff.salary)}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            label="Staff"
+            value={staff_id}
+            onChange={(value) => handleChange("staff_id", value)}
+            options={staffOptions}
+            loading={loadingDropdowns}
+            disabled={loadingDropdowns}
+            required
+            size="small"
+          />
 
-          <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-            <InputLabel>Bank Account</InputLabel>
-            <Select
-              value={bank_account_id}
-              onChange={(e) => handleChange("bank_account_id", e.target.value)}
-              label="Bank Account"
-            >
-              {loadingDropdowns ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                </MenuItem>
-              ) : bankAccounts.length === 0 ? (
-                <MenuItem disabled>No bank accounts available</MenuItem>
-              ) : (
-                bankAccounts.map((account) => (
-                  <MenuItem key={account.bank_account_id} value={account.bank_account_id}>
-                    {account.account_name} - {account.account_number}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            label="Bank Account"
+            value={bank_account_id}
+            onChange={(value) => handleChange("bank_account_id", value)}
+            options={bankAccountOptions}
+            loading={loadingDropdowns}
+            disabled={loadingDropdowns}
+            required
+            size="small"
+          />
 
           <TextField
             label="Effective Date"
@@ -256,29 +251,16 @@ const EditStaffSalary = ({
             inputProps={{ step: "0.01", min: "0" }}
           />
 
-          <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-            <InputLabel>Salary Type</InputLabel>
-            <Select
-              value={salary_type_id}
-              onChange={(e) => handleChange("salary_type_id", e.target.value)}
-              label="Salary Type"
-            >
-              {loadingDropdowns ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                </MenuItem>
-              ) : salaryTypes.length === 0 ? (
-                <MenuItem disabled>No salary types available</MenuItem>
-              ) : (
-                salaryTypes.map((type) => (
-                  <MenuItem key={type.salary_type_id} value={type.salary_type_id}>
-                    {type.salary_type}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            label="Salary Type"
+            value={salary_type_id}
+            onChange={(value) => handleChange("salary_type_id", value)}
+            options={salaryTypeOptions}
+            loading={loadingDropdowns}
+            disabled={loadingDropdowns}
+            required
+            size="small"
+          />
 
           <TextField
             label="Remarks"

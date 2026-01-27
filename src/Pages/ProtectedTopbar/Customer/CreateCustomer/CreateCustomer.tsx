@@ -5,15 +5,14 @@ import {
   DialogActions,
   Button,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  IconButton,
+  Box,
   CircularProgress,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { FiX } from "react-icons/fi";
 
 import type { AppDispatch, RootState } from "../../../../store/store";
 import { setField, resetForm } from "./CreateCustomer.slice";
@@ -21,6 +20,7 @@ import { createCustomerApi } from "../../../../service/customer";
 import { getCustomerTypeListApi } from "../../../../service/customerType";
 import type { CustomerType } from "../../../../type/customerType";
 import type { CreateCustomerState } from "../../../../type/customer";
+import SearchableSelect from "../../../../Components/SearchableSelect";
 
 interface CreateCustomerProps {
   open: boolean;
@@ -63,6 +63,15 @@ const CreateCustomer = ({ open, onClose }: CreateCustomerProps) => {
   const handleChange = (field: keyof CreateCustomerState, value: string | number) => {
     dispatch(setField({ field, value }));
   };
+
+  // Prepare options for SearchableSelect
+  const customerTypeOptions = useMemo(() =>
+    customerTypes.map((type) => ({
+      value: type.customer_type_id,
+      label: type.customer_type_name,
+    })),
+    [customerTypes]
+  );
 
   const validatePhoneNumber = (phone: string): boolean => {
     // Basic validation: only digits, 10-15 characters
@@ -149,8 +158,20 @@ const CreateCustomer = ({ open, onClose }: CreateCustomerProps) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Create Customer</DialogTitle>
+    <Dialog open={open} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <span>Create Customer</span>
+          <IconButton
+            onClick={handleClose}
+            disabled={loading}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <FiX />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       <DialogContent>
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <TextField
@@ -162,29 +183,16 @@ const CreateCustomer = ({ open, onClose }: CreateCustomerProps) => {
             size="small"
           />
 
-          <FormControl fullWidth required size="small" disabled={loadingTypes}>
-            <InputLabel>Customer Type</InputLabel>
-            <Select
-              value={customer_type_id || ""}
-              onChange={(e) => handleChange("customer_type_id", e.target.value)}
-              label="Customer Type"
-            >
-              {loadingTypes ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                </MenuItem>
-              ) : customerTypes.length === 0 ? (
-                <MenuItem disabled>No customer types available</MenuItem>
-              ) : (
-                customerTypes.map((type) => (
-                  <MenuItem key={type.customer_type_id} value={type.customer_type_id}>
-                    {type.customer_type_name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            label="Customer Type"
+            value={customer_type_id !== null ? customer_type_id.toString() : ""}
+            onChange={(value) => handleChange("customer_type_id", value)}
+            options={customerTypeOptions}
+            loading={loadingTypes}
+            disabled={loadingTypes}
+            required
+            size="small"
+          />
 
           <TextField
             label="Address 1"
@@ -219,9 +227,6 @@ const CreateCustomer = ({ open, onClose }: CreateCustomerProps) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
-          Cancel
-        </Button>
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>
           {loading ? <CircularProgress size={24} /> : "Create"}
         </Button>

@@ -2,13 +2,9 @@ import {
   Button,
   TextField,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -18,6 +14,7 @@ import { setField, resetForm } from "./AccountTransfer.slice";
 import type { AccountTransferState, BankAccount } from "../../../type/bankAccount";
 import { getBankAccountListApi, transferBankAccountApi } from "../../../service/bankAccount";
 import Breadcrumb from "../../../Components/Breadcrumb";
+import SearchableSelect from "../../../Components/SearchableSelect";
 
 function AccountTransfer() {
   const dispatch = useDispatch<AppDispatch>();
@@ -54,6 +51,15 @@ function AccountTransfer() {
   const handleChange = (field: keyof AccountTransferState, value: string) => {
     dispatch(setField({ field, value }));
   };
+
+  // Prepare options for SearchableSelect
+  const bankAccountOptions = useMemo(() =>
+    bankAccounts.map((account) => ({
+      value: account.bank_account_id,
+      label: `${account.account_name} - ${account.account_number} (₹${parseFloat(account.current_balance).toFixed(2)})`,
+    })),
+    [bankAccounts]
+  );
 
   const handleTransfer = async () => {
     // Validation
@@ -138,6 +144,7 @@ function AccountTransfer() {
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },
+    { label: "Masterdata", path: "/master" },
     { label: "Account Transfer" }
   ];
 
@@ -156,53 +163,27 @@ function AccountTransfer() {
       <div className="flex-1 px-3 py-4">
         <Paper sx={{ p: 3, maxWidth: 600, mx: 'auto' }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <FormControl fullWidth required size="small" disabled={loadingAccounts}>
-              <InputLabel>From Bank Account</InputLabel>
-              <Select
-                value={from_account_id}
-                onChange={(e) => handleChange("from_account_id", e.target.value)}
-                label="From Bank Account"
-              >
-                {loadingAccounts ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                  </MenuItem>
-                ) : bankAccounts.length === 0 ? (
-                  <MenuItem disabled>No bank accounts available</MenuItem>
-                ) : (
-                  bankAccounts.map((account) => (
-                    <MenuItem key={account.bank_account_id} value={account.bank_account_id}>
-                      {account.account_name} - {account.account_number} (₹{parseFloat(account.current_balance).toFixed(2)})
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+            <SearchableSelect
+              label="From Bank Account"
+              value={from_account_id}
+              onChange={(value) => handleChange("from_account_id", value)}
+              options={bankAccountOptions}
+              loading={loadingAccounts}
+              disabled={loadingAccounts}
+              required
+              size="small"
+            />
 
-            <FormControl fullWidth required size="small" disabled={loadingAccounts}>
-              <InputLabel>To Bank Account</InputLabel>
-              <Select
-                value={to_account_id}
-                onChange={(e) => handleChange("to_account_id", e.target.value)}
-                label="To Bank Account"
-              >
-                {loadingAccounts ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                  </MenuItem>
-                ) : bankAccounts.length === 0 ? (
-                  <MenuItem disabled>No bank accounts available</MenuItem>
-                ) : (
-                  bankAccounts.map((account) => (
-                    <MenuItem key={account.bank_account_id} value={account.bank_account_id}>
-                      {account.account_name} - {account.account_number} (₹{parseFloat(account.current_balance).toFixed(2)})
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+            <SearchableSelect
+              label="To Bank Account"
+              value={to_account_id}
+              onChange={(value) => handleChange("to_account_id", value)}
+              options={bankAccountOptions}
+              loading={loadingAccounts}
+              disabled={loadingAccounts}
+              required
+              size="small"
+            />
 
             <TextField
               label="Amount to Transfer"

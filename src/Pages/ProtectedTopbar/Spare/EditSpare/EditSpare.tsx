@@ -86,7 +86,7 @@ function EditSpare({ open, onClose, spare }: EditSpareProps) {
   };
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <DialogTitle>
         <div className="flex items-center justify-between">
           <span>Edit Spare</span>
@@ -112,9 +112,6 @@ function EditSpare({ open, onClose, spare }: EditSpareProps) {
         </DialogContent>
 
         <DialogActions>
-          <Button onClick={onClose} variant="outlined">
-            Cancel
-          </Button>
           <Button type="submit" variant="contained">
             Update
           </Button>

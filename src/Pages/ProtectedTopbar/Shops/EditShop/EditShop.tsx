@@ -121,7 +121,7 @@ function EditShop({ open, onClose, shop }: EditShopProps) {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <span>Edit Shop</span>

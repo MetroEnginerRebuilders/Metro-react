@@ -2,13 +2,9 @@ import {
   Button,
   TextField,
   Paper,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
   CircularProgress,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
@@ -24,6 +20,7 @@ import { getActiveStaffListApi } from "../../../service/staff";
 import { getBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
 import Breadcrumb from "../../../Components/Breadcrumb";
+import SearchableSelect from "../../../Components/SearchableSelect";
 
 function CreateStaffSalary() {
   const dispatch = useDispatch<AppDispatch>();
@@ -73,6 +70,31 @@ function CreateStaffSalary() {
   const handleChange = (field: keyof CreateStaffSalaryState, value: string) => {
     dispatch(setField({ field, value }));
   };
+
+  // Prepare options for SearchableSelect
+  const staffOptions = useMemo(() => 
+    staffList.map((staff) => ({
+      value: staff.staff_id,
+      label: staff.staff_name,
+    })),
+    [staffList]
+  );
+
+  const bankAccountOptions = useMemo(() =>
+    bankAccounts.map((account) => ({
+      value: account.bank_account_id,
+      label: `${account.account_name} - ${account.account_number}`,
+    })),
+    [bankAccounts]
+  );
+
+  const salaryTypeOptions = useMemo(() =>
+    salaryTypes.map((type) => ({
+      value: type.salary_type_id,
+      label: type.salary_type,
+    })),
+    [salaryTypes]
+  );
 
   const handleSubmit = async () => {
     // Validation
@@ -179,53 +201,27 @@ function CreateStaffSalary() {
       <div className="flex-1 px-3 py-4">
         <Paper sx={{ p: 3, maxWidth: 800, mx: 'auto' }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-              <InputLabel>Staff</InputLabel>
-              <Select
-                value={staff_id}
-                onChange={(e) => handleChange("staff_id", e.target.value)}
-                label="Staff"
-              >
-                {loadingDropdowns ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                  </MenuItem>
-                ) : staffList.length === 0 ? (
-                  <MenuItem disabled>No active staff available</MenuItem>
-                ) : (
-                  staffList.map((staff) => (
-                    <MenuItem key={staff.staff_id} value={staff.staff_id}>
-                      {staff.staff_name}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+            <SearchableSelect
+              label="Staff"
+              value={staff_id}
+              onChange={(value) => handleChange("staff_id", value)}
+              options={staffOptions}
+              loading={loadingDropdowns}
+              disabled={loadingDropdowns}
+              required
+              size="small"
+            />
 
-            <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-              <InputLabel>Bank Account</InputLabel>
-              <Select
-                value={bank_account_id}
-                onChange={(e) => handleChange("bank_account_id", e.target.value)}
-                label="Bank Account"
-              >
-                {loadingDropdowns ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                  </MenuItem>
-                ) : bankAccounts.length === 0 ? (
-                  <MenuItem disabled>No bank accounts available</MenuItem>
-                ) : (
-                  bankAccounts.map((account) => (
-                    <MenuItem key={account.bank_account_id} value={account.bank_account_id}>
-                      {account.account_name} - {account.account_number}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+            <SearchableSelect
+              label="Bank Account"
+              value={bank_account_id}
+              onChange={(value) => handleChange("bank_account_id", value)}
+              options={bankAccountOptions}
+              loading={loadingDropdowns}
+              disabled={loadingDropdowns}
+              required
+              size="small"
+            />
 
             <TextField
               label="Effective Date"
@@ -251,29 +247,16 @@ function CreateStaffSalary() {
               inputProps={{ step: "0.01", min: "0" }}
             />
 
-            <FormControl fullWidth required size="small" disabled={loadingDropdowns}>
-              <InputLabel>Salary Type</InputLabel>
-              <Select
-                value={salary_type_id}
-                onChange={(e) => handleChange("salary_type_id", e.target.value)}
-                label="Salary Type"
-              >
-                {loadingDropdowns ? (
-                  <MenuItem disabled>
-                    <CircularProgress size={20} />
-                    <span style={{ marginLeft: "10px" }}>Loading...</span>
-                  </MenuItem>
-                ) : salaryTypes.length === 0 ? (
-                  <MenuItem disabled>No salary types available</MenuItem>
-                ) : (
-                  salaryTypes.map((type) => (
-                    <MenuItem key={type.salary_type_id} value={type.salary_type_id}>
-                      {type.salary_type}
-                    </MenuItem>
-                  ))
-                )}
-              </Select>
-            </FormControl>
+            <SearchableSelect
+              label="Salary Type"
+              value={salary_type_id}
+              onChange={(value) => handleChange("salary_type_id", value)}
+              options={salaryTypeOptions}
+              loading={loadingDropdowns}
+              disabled={loadingDropdowns}
+              required
+              size="small"
+            />
 
             <TextField
               label="Remarks"

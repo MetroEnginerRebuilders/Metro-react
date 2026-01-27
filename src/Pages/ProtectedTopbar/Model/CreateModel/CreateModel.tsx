@@ -79,7 +79,7 @@ const CreateModel = ({ open, onClose }: CreateModelProps) => {
   };
 
   return (
-    <Dialog open={open}maxWidth="sm" fullWidth>
+    <Dialog open={open} maxWidth="sm" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <span>Create Model</span>

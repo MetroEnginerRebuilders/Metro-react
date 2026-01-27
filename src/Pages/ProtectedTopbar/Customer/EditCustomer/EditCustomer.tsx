@@ -5,15 +5,14 @@ import {
   DialogActions,
   Button,
   TextField,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
+  IconButton,
+  Box,
   CircularProgress,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
+import { FiX } from "react-icons/fi";
 
 import type { AppDispatch, RootState } from "../../../../store/store";
 import { setField, setCustomerData, resetForm } from "./EditCustomer.slice";
@@ -21,6 +20,7 @@ import { updateCustomerApi } from "../../../../service/customer";
 import { getCustomerTypeListApi } from "../../../../service/customerType";
 import type { CustomerType } from "../../../../type/customerType";
 import type { Customer, EditCustomerState } from "../../../../type/customer";
+import SearchableSelect from "../../../../Components/SearchableSelect";
 
 interface EditCustomerProps {
   open: boolean;
@@ -65,6 +65,15 @@ const EditCustomer = ({ open, onClose, customer }: EditCustomerProps) => {
   const handleChange = (field: keyof EditCustomerState, value: string | number) => {
     dispatch(setField({ field, value }));
   };
+
+  // Prepare options for SearchableSelect
+  const customerTypeOptions = useMemo(() =>
+    customerTypes.map((type) => ({
+      value: type.customer_type_id,
+      label: type.customer_type_name,
+    })),
+    [customerTypes]
+  );
 
   const validatePhoneNumber = (phone: string): boolean => {
     // Basic validation: only digits, 10-15 characters
@@ -153,8 +162,20 @@ const EditCustomer = ({ open, onClose, customer }: EditCustomerProps) => {
   };
 
   return (
-    <Dialog open={open} onClose={handleClose} maxWidth="sm" fullWidth>
-      <DialogTitle>Edit Customer</DialogTitle>
+    <Dialog open={open} maxWidth="sm" fullWidth>
+      <DialogTitle>
+        <Box display="flex" alignItems="center" justifyContent="space-between">
+          <span>Edit Customer</span>
+          <IconButton
+            onClick={handleClose}
+            disabled={loading}
+            size="small"
+            sx={{ color: 'text.secondary' }}
+          >
+            <FiX />
+          </IconButton>
+        </Box>
+      </DialogTitle>
       <DialogContent>
         <div style={{ marginTop: "10px", display: "flex", flexDirection: "column", gap: "16px" }}>
           <TextField
@@ -166,29 +187,16 @@ const EditCustomer = ({ open, onClose, customer }: EditCustomerProps) => {
             size="small"
           />
 
-          <FormControl fullWidth required size="small" disabled={loadingTypes}>
-            <InputLabel>Customer Type</InputLabel>
-            <Select
-              value={customer_type_id || ""}
-              onChange={(e) => handleChange("customer_type_id", e.target.value)}
-              label="Customer Type"
-            >
-              {loadingTypes ? (
-                <MenuItem disabled>
-                  <CircularProgress size={20} />
-                  <span style={{ marginLeft: "10px" }}>Loading...</span>
-                </MenuItem>
-              ) : customerTypes.length === 0 ? (
-                <MenuItem disabled>No customer types available</MenuItem>
-              ) : (
-                customerTypes.map((type) => (
-                  <MenuItem key={type.customer_type_id} value={type.customer_type_id}>
-                    {type.customer_type_name}
-                  </MenuItem>
-                ))
-              )}
-            </Select>
-          </FormControl>
+          <SearchableSelect
+            label="Customer Type"
+            value={customer_type_id !== null ? customer_type_id.toString() : ""}
+            onChange={(value) => handleChange("customer_type_id", value)}
+            options={customerTypeOptions}
+            loading={loadingTypes}
+            disabled={loadingTypes}
+            required
+            size="small"
+          />
 
           <TextField
             label="Address 1"

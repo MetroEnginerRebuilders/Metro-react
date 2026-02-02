@@ -17,8 +17,14 @@ export const formatDate = (dateString: string | null | undefined): string => {
  * @param amount - The amount to format (string or number)
  * @returns Formatted currency string with 2 decimal places
  */
-export const formatCurrency = (amount: string | number): string => {
+export const formatCurrency = (amount: string | number | null | undefined): string => {
+  if (!amount || amount === null || amount === undefined || amount === '') {
+    return '0.00';
+  }
   const numAmount = typeof amount === 'string' ? parseFloat(amount) : amount;
+  if (isNaN(numAmount)) {
+    return '0.00';
+  }
   return numAmount.toLocaleString('en-IN', {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2

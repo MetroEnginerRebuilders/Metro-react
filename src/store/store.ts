@@ -29,6 +29,12 @@ import editStaff from "../Pages/ProtectedTopbar/StaffDetails/EditStaff/EditStaff
 import staffSalaryList from "../Pages/ProtectedTopbar/StaffSalary/StaffSalaryList.slice.ts";
 import createStaffSalary from "../Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary.slice.ts";
 import editStaffSalary from "../Pages/ProtectedTopbar/StaffSalary/EditStaffSalary.slice.ts";
+import incomeList from "../Pages/Sidebar/Income/IncomeList/IncomeList.slice.ts";
+import createIncome from "../Pages/Sidebar/Income/CreateIncome/CreateIncome.slice.ts";
+import editIncome from "../Pages/Sidebar/Income/EditIncome/EditIncome.slice.ts";
+import expenseList from "../Pages/Sidebar/Expense/ExpenseList/ExpenseList.slice.ts";
+import createExpense from "../Pages/Sidebar/Expense/CreateExpense/CreateExpense.slice.ts";
+import editExpense from "../Pages/Sidebar/Expense/EditExpense/EditExpense.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -61,7 +67,13 @@ export const store = configureStore({
    editStaff,
    staffSalaryList,
    createStaffSalary,
-   editStaffSalary
+   editStaffSalary,
+   incomeList,
+   createIncome,
+   editIncome,
+   expenseList,
+   createExpense,
+   editExpense
   },
 });
 

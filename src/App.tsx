@@ -8,13 +8,10 @@ import Dashboard from './Pages/Sidebar/Dashboard/Dashboard'
 import ProtectedRoute from './Components/ProtectedRoute'
 import Search from './Pages/Sidebar/Search/Search'
 import MonthlyReports from './Pages/Sidebar/MonthlyReports/MonthlyReports'
-import Stock from './Pages/Sidebar/Stock/Stock'
-import PurchaseStock from './Pages/Sidebar/PurchaseStock/PurchaseStock'
-import ReturnStock from './Pages/Sidebar/ReturnStock/ReturnStock'
 import Jobs from './Pages/Sidebar/Jobs/Jobs'
 import TransactionLogs from './Pages/Sidebar/TransactionLogs/TransactionLogs'
-import Income from './Pages/Sidebar/Income/Income'
-import Expense from './Pages/Sidebar/Expense/Expense'
+import Income from './Pages/Sidebar/Income/IncomeList/Income'
+import Expense from './Pages/Sidebar/Expense/ExpenseList/Expense'
 import Invoice from './Pages/Sidebar/Invoice/Invoice'
 import Payment from './Pages/Sidebar/Payment/Payment'
 import Statement from './Pages/Sidebar/Statement/Statement'
@@ -30,6 +27,7 @@ import Customer from './Pages/ProtectedTopbar/Customer/CustomerList/Customer'
 import BankAccount from './Pages/ProtectedTopbar/BankAccount/BankAccountList/BankAccount'
 import Company from './Pages/ProtectedTopbar/Company/CompanyList/Company'
 import CreateStaffSalary from './Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary'
+import StockList from './Pages/Sidebar/Stock/StockList/StockList'
 
 function App() {
 
@@ -46,9 +44,7 @@ function App() {
           <Route path="/search" element={<Search />} />
           <Route path="/master" element={<MasterData/>} />
           <Route path="/monthly-reports" element={<MonthlyReports />} />
-          <Route path="/stock/purchase" element={<PurchaseStock />} />
-          <Route path="/stock/return" element={<ReturnStock />} />
-          <Route path="/stock/view" element={<Stock />} />
+          <Route path="/stock" element={<StockList />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/transaction-logs" element={<TransactionLogs />} />
           <Route path="/income" element={<Income />} />

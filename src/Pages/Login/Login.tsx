@@ -40,7 +40,6 @@ function Login() {
         }
         try {
             const result = await LoginApi({ username, password });
-            console.log("Login successful:", result);
             dispatch(setLoginResponse(result));
             
             // Store token in sessionStorage

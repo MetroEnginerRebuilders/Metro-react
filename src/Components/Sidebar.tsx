@@ -52,13 +52,7 @@ const iconsMap: Record<string, ReactElement> = {
 
 function Sidebar() {
   const location = useLocation();
-  const [stockOpen, setStockOpen] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-
-  useEffect(() => {
-    // auto-open stock submenu when on a stock sub-route
-    if (location.pathname.startsWith("/stock")) setStockOpen(true);
-  }, [location.pathname]);
 
   useEffect(() => {
     // Close mobile sidebar when route changes
@@ -92,101 +86,25 @@ function Sidebar() {
       >
       <nav className="pt-2">
         <ul className="space-y-1">
-          {tabs.map((t, idx) => {
-            if (t.key === "stock") {
-              return (
-                <li key={t.to} className={idx === 0 ? "mb-3" : ""}>
-                  <button
-                    type="button"
-                    onClick={() => setStockOpen((s) => !s)}
-                    className={
-                      "w-full flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b] transition-colors"
-                    }
-                  >
-                    <span className="w-5 h-5 flex items-center justify-center text-current">
-                      {iconsMap[t.key]}
-                    </span>
-                    <span className="text-sm font-medium flex-1 text-left">{t.label}</span>
-                    <svg
-                      className={`w-4 h-4 transition-transform ${stockOpen ? "rotate-180" : ""}`}
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                    >
-                      <path d="M6 9l6 6 6-6" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-                    </svg>
-                  </button>
-
-                  {stockOpen && (
-                    <ul className="mt-2 space-y-1">
-                      <li>
-                        <NavLink
-                          to="/stock/purchase"
-                          className={({ isActive }) =>
-                            (isActive
-                              ? "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-[#e6f2ff] text-[#3A5795]"
-                              : "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b]") +
-                            " text-sm"
-                          }
-                        >
-                          <FaCaretRight className="w-4 h-4" />
-                          <span>Purchase Stock</span>
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink
-                          to="/stock/return"
-                          className={({ isActive }) =>
-                            (isActive
-                              ? "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-[#e6f2ff] text-[#3A5795]"
-                              : "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b]") +
-                            " text-sm"
-                          }
-                        >
-                          <FaCaretRight className="w-4 h-4" />
-                          <span>Return Stock</span>
-                        </NavLink>
-                      </li>
-                      <li>
-                        <NavLink
-                          to="/stock/view"
-                          className={({ isActive }) =>
-                            (isActive
-                              ? "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-[#e6f2ff] text-[#3A5795]"
-                              : "flex items-center gap-2 pl-10 pr-3 py-2 rounded-md bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b]") +
-                            " text-sm"
-                          }
-                        >
-                          <FaCaretRight className="w-4 h-4" />
-                          <span>View Stock</span>
-                        </NavLink>
-                      </li>
-                    </ul>
-                  )}
-                </li>
-              );
-            }
-
-            return (
-              <li key={t.to} className={idx === 0 ? "mb-3" : ""}>
-                <NavLink
-                  to={t.to}
-                  end={t.to === "/"}
-                  className={({ isActive }) =>
-                    (isActive
-                      ? "flex items-center gap-3 px-3 py-2 rounded-md border border-transparent bg-[#e6f2ff] text-[#3A5795]"
-                      : "flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b]") +
-                    " transition-colors"
-                  }
-                >
-                  <span className="w-5 h-5 flex items-center justify-center text-current">
-                    {iconsMap[t.key]}
-                  </span>
-                  <span className="text-sm font-medium">{t.label}</span>
-                </NavLink>
-              </li>
-            );
-          })}
+          {tabs.map((t, idx) => (
+            <li key={t.to} className={idx === 0 ? "mb-3" : ""}>
+              <NavLink
+                to={t.to}
+                end={t.to === "/"}
+                className={({ isActive }) =>
+                  (isActive
+                    ? "flex items-center gap-3 px-3 py-2 rounded-md border border-transparent bg-[#e6f2ff] text-[#3A5795]"
+                    : "flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 bg-white text-[#60A5FA] hover:bg-gray-50 hover:text-[#1e4a8b]") +
+                  " transition-colors"
+                }
+              >
+                <span className="w-5 h-5 flex items-center justify-center text-current">
+                  {iconsMap[t.key]}
+                </span>
+                <span className="text-sm font-medium">{t.label}</span>
+              </NavLink>
+            </li>
+          ))}
 
           {/* Logout Button */}
           <li className="mt-4 pt-4 border-t border-gray-300">

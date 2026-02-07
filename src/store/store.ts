@@ -35,6 +35,7 @@ import editIncome from "../Pages/Sidebar/Income/EditIncome/EditIncome.slice.ts";
 import expenseList from "../Pages/Sidebar/Expense/ExpenseList/ExpenseList.slice.ts";
 import createExpense from "../Pages/Sidebar/Expense/CreateExpense/CreateExpense.slice.ts";
 import editExpense from "../Pages/Sidebar/Expense/EditExpense/EditExpense.slice.ts";
+import createStock from "../Pages/Sidebar/Stock/CreateStock/CreateStock.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -73,7 +74,8 @@ export const store = configureStore({
    editIncome,
    expenseList,
    createExpense,
-   editExpense
+   editExpense,
+   createStock
   },
 });
 

@@ -17,15 +17,12 @@ import {
   Box,
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import { FiTrash2 } from "react-icons/fi";
-import { useNavigate } from "react-router-dom";
-import CommonPagination from "../../../../Components/CommonPagination";
+import { FiEdit, FiTrash2 } from "react-icons/fi";
 import Breadcrumb from "../../../../Components/Breadcrumb";
-import ConfirmationDialog from "../../../../Components/ConfirmationDialog";
-import { getStockListApi, deleteStockItemApi } from "../../../../service/stock";
+import CommonPagination from "../../../../Components/CommonPagination";
+import { getStockListApi } from "../../../../service/stock";
 import type { StockTransactionItem, CurrentStockItem } from "../../../../type/stock";
 import { toast } from "react-toastify";
-
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -50,8 +47,7 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
-function StockList() {
-  const navigate = useNavigate();
+function Stock() {
   const [currentTab, setCurrentTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -63,8 +59,6 @@ function StockList() {
     hasNextPage: false,
     hasPreviousPage: false,
   });
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
 
   // Fetch stock data based on current tab
   const fetchStockData = useCallback(async () => {
@@ -130,34 +124,18 @@ function StockList() {
   };
 
   const handleCreateClick = () => {
-    navigate("/stock/create");
+    // TODO: Open create modal based on current tab
+    console.log("Create clicked for tab:", currentTab);
+  };
+
+  const handleEdit = (id: string) => {
+    // TODO: Open edit modal
+    console.log("Edit clicked for id:", id);
   };
 
   const handleDelete = (id: string) => {
-    setItemToDelete(id);
-    setTimeout(() => {
-      setDeleteDialogOpen(true);
-    }, 0);
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-
-    try {
-      const response = await deleteStockItemApi(itemToDelete);
-      if (response.success) {
-        toast.success(response.message || "Stock item deleted successfully");
-        fetchStockData(); // Refresh the list
-      } else {
-        toast.error(response.message || "Failed to delete stock item");
-      }
-    } catch (error: any) {
-      console.error("Error deleting stock item:", error);
-      toast.error(error?.response?.data?.message || "Failed to delete stock item");
-    } finally {
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
-    }
+    // TODO: Open delete confirmation
+    console.log("Delete clicked for id:", id);
   };
 
   const breadcrumbItems = [
@@ -168,16 +146,21 @@ function StockList() {
   const renderTableContent = (tableType: string) => {
     return (
       <>
-        {/* Search Section */}
+        {/* Header Section */}
         <div className="flex-shrink-0 px-3 py-2 bg-gray-100">
           <div className="max-w-full">
-            <TextField
-              size="small"
-              placeholder={`Search ${tableType}`}
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              sx={{ width: { xs: '100%', sm: '250px' } }}
-            />
+            <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center sm:justify-between">
+              <TextField
+                size="small"
+                placeholder={`Search ${tableType}`}
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                sx={{ width: { xs: '100%', sm: '250px' } }}
+              />
+              <Button variant="contained" onClick={handleCreateClick}>
+                Create New
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -226,7 +209,7 @@ function StockList() {
                       <TableCell>{row.model_name}</TableCell>
                       <TableCell>{row.spare_name}</TableCell>
                       <TableCell>{row.current_quantity}</TableCell>
-                      <TableCell>₹{Number(row.average_price).toFixed(2)}</TableCell>
+                      <TableCell>₹{row.average_price.toFixed(2)}</TableCell>
                     </TableRow>
                   ))
                 ) : (
@@ -243,19 +226,30 @@ function StockList() {
                       <TableCell>{row.spare_name}</TableCell>
                       <TableCell>{row.shop_name}</TableCell>
                       <TableCell>{row.quantity}</TableCell>
-                      <TableCell>₹{Number(row.price).toFixed(2)}</TableCell>
-                      <TableCell>₹{Number(row.total_price).toFixed(2)}</TableCell>
+                      <TableCell>₹{row.price.toFixed(2)}</TableCell>
+                      <TableCell>₹{row.total_price.toFixed(2)}</TableCell>
                       <TableCell>{new Date(row.order_date).toLocaleDateString()}</TableCell>
                       <TableCell align="center">
-                        <Tooltip title="Delete">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDelete(row.stock_transaction_item_id)}
-                          >
-                            <FiTrash2 />
-                          </IconButton>
-                        </Tooltip>
+                        <Stack direction="row" spacing={1} justifyContent="center">
+                          <Tooltip title="Edit">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleEdit(row.stock_transaction_item_id)}
+                            >
+                              <FiEdit />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Delete">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              onClick={() => handleDelete(row.stock_transaction_item_id)}
+                            >
+                              <FiTrash2 />
+                            </IconButton>
+                          </Tooltip>
+                        </Stack>
                       </TableCell>
                     </TableRow>
                   ))
@@ -289,49 +283,25 @@ function StockList() {
         </h1>
       </div>
 
-      {/* Tabs and Create Button Section */}
-      <div className="flex-shrink-0 px-3 pt-1">
-        <div className="flex items-center justify-between gap-2">
-          <Box sx={{ flex: 1 }}>
-            <Tabs 
-              value={currentTab} 
-              onChange={handleTabChange}
-              variant="scrollable"
-              scrollButtons="auto"
-              sx={{
-                minHeight: '42px',
-                '& .MuiTabs-indicator': {
-                  backgroundColor: '#3A5795',
-                  height: '3px',
-                },
-                '& .MuiTab-root': {
-                  minHeight: '42px',
-                  fontSize: '0.9375rem',
-                  fontWeight: '600',
-                  textTransform: 'none',
-                  padding: '6px 16px',
-                  color: '#64748b',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    backgroundColor: 'rgba(58, 87, 149, 0.08)',
-                    color: '#3A5795',
-                  },
-                  '&.Mui-selected': {
-                    color: '#3A5795',
-                    fontWeight: '700',
-                  },
-                },
-              }}
-            >
-              <Tab label="Purchased Stock" id="stock-tab-0" />
-              <Tab label="Returned Stock" id="stock-tab-1" />
-              <Tab label="Current Stock" id="stock-tab-2" />
-            </Tabs>
-          </Box>
-          <Button variant="contained" onClick={handleCreateClick} sx={{ minWidth: '120px' }}>
-            Create New
-          </Button>
-        </div>
+      {/* Tabs Section */}
+      <div className="flex-shrink-0 px-3">
+        <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
+          <Tabs 
+            value={currentTab} 
+            onChange={handleTabChange}
+            variant="fullWidth"
+            sx={{
+              '& .MuiTab-root': {
+                fontWeight: 'bold',
+                fontSize: '0.875rem',
+              },
+            }}
+          >
+            <Tab label="Purchased Stock" id="stock-tab-0" />
+            <Tab label="Returned Stock" id="stock-tab-1" />
+            <Tab label="Current Stock" id="stock-tab-2" />
+          </Tabs>
+        </Box>
       </div>
 
       {/* Tab Panels - Takes remaining space */}
@@ -354,19 +324,8 @@ function StockList() {
           </div>
         </TabPanel>
       </div>
-
-      <ConfirmationDialog
-        open={deleteDialogOpen}
-        title="Delete Stock Item"
-        message="Are you sure you want to delete this stock item? This action cannot be undone."
-        onConfirm={confirmDelete}
-        onCancel={() => {
-          setDeleteDialogOpen(false);
-          setItemToDelete(null);
-        }}
-      />
     </div>
   );
 }
 
-export default StockList;
+export default Stock;

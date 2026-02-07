@@ -28,6 +28,7 @@ import BankAccount from './Pages/ProtectedTopbar/BankAccount/BankAccountList/Ban
 import Company from './Pages/ProtectedTopbar/Company/CompanyList/Company'
 import CreateStaffSalary from './Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary'
 import StockList from './Pages/Sidebar/Stock/StockList/StockList'
+import CreateStock from './Pages/Sidebar/Stock/CreateStock/CreateStock'
 
 function App() {
 
@@ -45,6 +46,7 @@ function App() {
           <Route path="/master" element={<MasterData/>} />
           <Route path="/monthly-reports" element={<MonthlyReports />} />
           <Route path="/stock" element={<StockList />} />
+          <Route path="/stock/create" element={<CreateStock />} />
           <Route path="/jobs" element={<Jobs />} />
           <Route path="/transaction-logs" element={<TransactionLogs />} />
           <Route path="/income" element={<Income />} />

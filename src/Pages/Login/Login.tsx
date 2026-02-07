@@ -50,7 +50,10 @@ function Login() {
             setUser({ username: "", password: "" });
             navigate("/");
         } catch (error: any) {
-            alert(error);
+            toast.error(error?.response?.data?.message || "Login failed", {
+                position: "top-center",
+                autoClose: 3000,
+            });
         }
     };
 

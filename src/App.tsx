@@ -8,7 +8,6 @@ import Dashboard from './Pages/Sidebar/Dashboard/Dashboard'
 import ProtectedRoute from './Components/ProtectedRoute'
 import Search from './Pages/Sidebar/Search/Search'
 import MonthlyReports from './Pages/Sidebar/MonthlyReports/MonthlyReports'
-import Jobs from './Pages/Sidebar/Jobs/Jobs'
 import TransactionLogs from './Pages/Sidebar/TransactionLogs/TransactionLogs'
 import Income from './Pages/Sidebar/Income/IncomeList/Income'
 import Expense from './Pages/Sidebar/Expense/ExpenseList/Expense'
@@ -29,6 +28,9 @@ import Company from './Pages/ProtectedTopbar/Company/CompanyList/Company'
 import CreateStaffSalary from './Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary'
 import StockList from './Pages/Sidebar/Stock/StockList/StockList'
 import CreateStock from './Pages/Sidebar/Stock/CreateStock/CreateStock'
+import JobList from './Pages/Sidebar/Jobs/JobList/JobList'
+import InvoiceDetail from './Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail'
+import CreateJobPage from './Pages/Sidebar/Jobs/CreateJobPage/CreateJobPage'
 
 function App() {
 
@@ -47,11 +49,13 @@ function App() {
           <Route path="/monthly-reports" element={<MonthlyReports />} />
           <Route path="/stock" element={<StockList />} />
           <Route path="/stock/create" element={<CreateStock />} />
-          <Route path="/jobs" element={<Jobs />} />
+          <Route path="/jobs" element={<JobList />} />
+          <Route path="/jobs/create" element={<CreateJobPage />} />
           <Route path="/transaction-logs" element={<TransactionLogs />} />
           <Route path="/income" element={<Income />} />
           <Route path="/expenditure" element={<Expense />} />
           <Route path="/invoice" element={<Invoice />} />
+          <Route path="/invoice/:invoiceId" element={<InvoiceDetail />} />
           <Route path="/payment" element={<Payment />} />
           <Route path="/statement" element={<Statement />} />
           {/* Protected topbar  */}

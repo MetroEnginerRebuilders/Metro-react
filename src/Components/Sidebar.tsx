@@ -18,7 +18,6 @@ import {
   FiDatabase,
   FiLogOut
 } from "react-icons/fi";
-import { FaCaretRight } from "react-icons/fa";
 
 const tabs = [
   { to: "/search", label: "Search", key: "search" },

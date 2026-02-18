@@ -30,3 +30,33 @@ export const formatCurrency = (amount: string | number | null | undefined): stri
     maximumFractionDigits: 2
   });
 };
+
+/**
+ * Format invoice item remarks based on item type
+ * @param item - The invoice item object
+ * @returns Formatted remarks string
+ */
+export const formatInvoiceItemRemarks = (item: {
+  item_type_code?: string;
+  remarks?: string | null;
+  company_name?: string;
+  spare_name?: string;
+  model_name?: string;
+}): string => {
+  if (!item.item_type_code) return "-";
+
+  switch (item.item_type_code) {
+    case "DISCOUNT":
+      return item.item_type_code;
+    case "WORK":
+      return item.remarks || "-";
+    case "SPARE":
+      const parts = [];
+      if (item.company_name) parts.push(item.company_name);
+      if (item.spare_name) parts.push(item.spare_name);
+      if (item.model_name) parts.push(`(${item.model_name})`);
+      return parts.length > 0 ? parts.join("-") : "-";
+    default:
+      return item.remarks || "-";
+  }
+};

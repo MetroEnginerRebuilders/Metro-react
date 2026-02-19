@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 import { FiPlus, FiTrash2, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
+import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import {
   setLoading,
   setItemTypes,
@@ -30,13 +30,13 @@ import {
   getStockTransactionModelsApi,
   getStockTransactionSparesApi,
   addInvoiceItemsApi,
-} from "../../../../service/invoice";
+} from "../../../../../service/invoice";
 import type {
   InvoiceAddItem,
   ModelData,
   SpareData,
   AddInvoiceItemPayload,
-} from "../../../../type/invoice";
+} from "../../../../../type/invoice";
 import { useState, useEffect } from "react";
 
 interface AddInvoiceItemsModalProps {
@@ -241,17 +241,63 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     // Validate
     for (let i = 0; i < addItemsRows.length; i++) {
       const row = addItemsRows[i];
+      const selectedItemType = itemTypes.find(
+        (type) => type.item_type_id === row.item_type_id
+      );
+      const itemTypeCode = selectedItemType?.item_type_code;
+      const isWork = itemTypeCode === "WORK";
+      const isSpare = itemTypeCode === "SPARE";
+      const isDiscount = itemTypeCode === "DISCOUNT";
+
       if (!row.item_type_id) {
         toast.error(`Please select item type for row ${i + 1}`);
         return;
       }
-      if (!row.quantity || parseFloat(row.quantity) <= 0) {
-        toast.error(`Please enter valid quantity for row ${i + 1}`);
-        return;
+
+      // DISCOUNT validation: unit_price is mandatory
+      if (isDiscount) {
+        if (!row.unit_price || parseFloat(row.unit_price) < 0) {
+          toast.error(`Please enter valid unit price for row ${i + 1} (DISCOUNT)`);
+          return;
+        }
       }
-      if (!row.unit_price || parseFloat(row.unit_price) < 0) {
-        toast.error(`Please enter valid unit price for row ${i + 1}`);
-        return;
+      // WORK validation: type_of_work, quantity, unit_price are mandatory
+      else if (isWork) {
+        if (!row.type_of_work || row.type_of_work.trim() === "") {
+          toast.error(`Please enter type of work for row ${i + 1} (WORK)`);
+          return;
+        }
+        if (!row.quantity || parseFloat(row.quantity) <= 0) {
+          toast.error(`Please enter valid quantity for row ${i + 1} (WORK)`);
+          return;
+        }
+        if (!row.unit_price || parseFloat(row.unit_price) < 0) {
+          toast.error(`Please enter valid unit price for row ${i + 1} (WORK)`);
+          return;
+        }
+      }
+      // SPARE validation: company, model, spare, quantity, unit_price are mandatory
+      else if (isSpare) {
+        if (!row.company_id) {
+          toast.error(`Please select company for row ${i + 1} (SPARE)`);
+          return;
+        }
+        if (!row.model_id) {
+          toast.error(`Please select model for row ${i + 1} (SPARE)`);
+          return;
+        }
+        if (!row.spare_id) {
+          toast.error(`Please select spare for row ${i + 1} (SPARE)`);
+          return;
+        }
+        if (!row.quantity || parseFloat(row.quantity) <= 0) {
+          toast.error(`Please enter valid quantity for row ${i + 1} (SPARE)`);
+          return;
+        }
+        if (!row.unit_price || parseFloat(row.unit_price) < 0) {
+          toast.error(`Please enter valid unit price for row ${i + 1} (SPARE)`);
+          return;
+        }
       }
     }
 
@@ -337,7 +383,9 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
           <Table size="small">
             <TableHead>
               <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Item Type</TableCell>
+                <TableCell style={{ fontWeight: "bold", flex: 1 }}>
+                  Item Type <span style={{ color: "red" }}>*</span>
+                </TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Type of Work</TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Company</TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Model</TableCell>
@@ -391,10 +439,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       size="small"
                       value={row.type_of_work}
                       onChange={(e) => handleTypeOfWorkChange(row.tempId, e.target.value)}
-                      placeholder="Type"
+                      placeholder={isWork ? "Type (Required)" : "Type"}
                       fullWidth
                       variant="outlined"
                       disabled={isSpare || isDiscount}
+                      error={isWork && !row.type_of_work}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           height: "40px",
@@ -428,7 +477,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                         option.company_id === value?.company_id
                       }
                       renderInput={(params) => (
-                        <TextField {...params} placeholder="Select" />
+                        <TextField 
+                          {...params} 
+                          placeholder={isSpare ? "Select (Required)" : "Select"}
+                          error={isSpare && !row.company_id}
+                        />
                       )}
                       noOptionsText="No companies available"
                     />
@@ -453,7 +506,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                         option.model_id === value?.model_id
                       }
                       renderInput={(params) => (
-                        <TextField {...params} placeholder="Select" />
+                        <TextField 
+                          {...params} 
+                          placeholder={isSpare ? "Select (Required)" : "Select"}
+                          error={isSpare && !row.model_id}
+                        />
                       )}
                       noOptionsText="No models available"
                     />
@@ -478,7 +535,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                         option.spare_id === value?.spare_id
                       }
                       renderInput={(params) => (
-                        <TextField {...params} placeholder="Select" />
+                        <TextField 
+                          {...params} 
+                          placeholder={isSpare ? "Select (Required)" : "Select"}
+                          error={isSpare && !row.spare_id}
+                        />
                       )}
                       noOptionsText="No spares available"
                     />
@@ -508,7 +569,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       type="text"
                       value={row.quantity}
                       onChange={(e) => handleQuantityChange(row.tempId, e.target.value)}
+                      placeholder={(isWork || isSpare) ? "Req'd" : "Qty"}
                       inputProps={{ min: 1, step: "1" }}
+                      disabled={isDiscount}
+                      error={(isWork || isSpare) && !row.quantity}
                       variant="outlined"
                       sx={{
                         "& .MuiOutlinedInput-root": {
@@ -527,7 +591,9 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       type="text"
                       value={row.unit_price}
                       onChange={(e) => handleUnitPriceChange(row.tempId, e.target.value)}
+                      placeholder="Price (Required)"
                       inputProps={{ min: 0, step: "0.01" }}
+                      error={!row.unit_price}
                       variant="outlined"
                       sx={{
                         "& .MuiOutlinedInput-root": {

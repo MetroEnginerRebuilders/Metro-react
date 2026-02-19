@@ -39,7 +39,7 @@ import createStock from "../Pages/Sidebar/Stock/CreateStock/CreateStock.slice.ts
 import createJob from "../Pages/Sidebar/Jobs/CreateJob/CreateJob.slice.ts";
 import invoiceList from "../Pages/Sidebar/Invoice/Invoice.slice.ts";
 import invoiceDetail from "../Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail.slice.ts";
-import addInvoiceItems from "../Pages/Sidebar/Invoice/InvoiceDetail/AddInvoiceItems.slice.ts";
+import addInvoiceItems from "../Pages/Sidebar/Invoice/InvoiceDetail/AddInvoiceItems/AddInvoiceItems.slice.ts";
 
 export const store = configureStore({
   reducer: {

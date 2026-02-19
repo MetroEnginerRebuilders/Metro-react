@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse } from "../type/invoice";
+import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse, DeleteInvoiceItemResponse } from "../type/invoice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -92,6 +92,22 @@ export const addInvoiceItemsApi = async (
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
+      },
+    }
+  );
+  return response.data;
+};
+
+export const deleteInvoiceItemApi = async (
+  invoiceId: string,
+  invoiceItemId: string
+): Promise<DeleteInvoiceItemResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.delete(
+    `${BASE_URL}/invoice/${invoiceId}/items/${invoiceItemId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
       },
     }
   );

@@ -16,12 +16,12 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { FiPlus, FiSearch, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiTrash2 } from "react-icons/fi";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Breadcrumb from "../../../../Components/Breadcrumb";
-import AddInvoiceItemsModal from "./AddInvoiceItemsModal";
-import { getInvoiceDetailsApi } from "../../../../service/invoice";
+import AddInvoiceItemsModal from "./AddInvoiceItems/AddInvoiceItemsModal";
+import { getInvoiceDetailsApi, deleteInvoiceItemApi } from "../../../../service/invoice";
 import { formatCurrency, formatDate, formatInvoiceItemRemarks } from "../../../../utils/formatters";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
@@ -29,13 +29,17 @@ import {
   setInvoiceDetails,
   setError,
 } from "./InvoiceDetail.slice";
+import {
+  setDeleteLoading,
+  setDeleteError,
+} from "./AddInvoiceItems/AddInvoiceItems.slice";
 
 const InvoiceDetailPage = () => {
   const { invoiceId } = useParams();
   const dispatch = useAppDispatch();
   const invoiceDetail = useAppSelector((state) => state.invoiceDetail.detail);
   const loading = useAppSelector((state) => state.invoiceDetail.loading);
-  const [searchInput, setSearchInput] = useState("");
+  const deleteLoading = useAppSelector((state) => state.addInvoiceItems.deleteLoading);
   const [appliedSearch, setAppliedSearch] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
 
@@ -76,10 +80,6 @@ const InvoiceDetailPage = () => {
     );
   }, [items, appliedSearch]);
 
-  const handleSearch = () => {
-    setAppliedSearch(searchInput);
-  };
-
   const handleOpenAdd = () => {
     setOpenAddModal(true);
   };
@@ -91,6 +91,37 @@ const InvoiceDetailPage = () => {
   const handleAddItems = () => {
     // Refresh the invoice detail to get updated total amount from backend
     fetchInvoiceDetail();
+  };
+
+  const handleDeleteItem = async (invoiceItemId: string) => {
+    if (!invoiceId) return;
+    dispatch(setDeleteLoading(true));
+    try {
+      const response = await deleteInvoiceItemApi(invoiceId, invoiceItemId);
+      if (response.success) {
+        toast.success("Item deleted successfully", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        // Refresh the invoice detail to update items list and total amount
+        await fetchInvoiceDetail();
+      } else {
+        dispatch(setDeleteError(response.message || "Failed to delete item"));
+        toast.error(response.message || "Failed to delete item", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      }
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || "Failed to delete item";
+      dispatch(setDeleteError(errorMessage));
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } finally {
+      dispatch(setDeleteLoading(false));
+    }
   };
 
   const breadcrumbItems = [
@@ -241,13 +272,10 @@ const InvoiceDetailPage = () => {
               <TextField
                 size="small"
                 placeholder="Search items"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
+                value={appliedSearch}
+                onChange={(e) => setAppliedSearch(e.target.value)}
                 sx={{ width: { xs: "100%", sm: "250px" } }}
               />
-              <Button variant="outlined" startIcon={<FiSearch />} onClick={handleSearch}>
-                Search
-              </Button>
             </Box>
 
             <Box display="flex" gap={1} justifyContent={{ xs: "flex-start", sm: "flex-end" }}>
@@ -296,7 +324,12 @@ const InvoiceDetailPage = () => {
                       <TableCell align="center">
                         <Stack direction="row" spacing={1} justifyContent="center">
                           <Tooltip title="Delete">
-                            <IconButton size="small" color="error">
+                            <IconButton
+                              size="small"
+                              color="error"
+                              disabled={deleteLoading}
+                              onClick={() => handleDeleteItem(item.invoice_item_id)}
+                            >
                               <FiTrash2 />
                             </IconButton>
                           </Tooltip>

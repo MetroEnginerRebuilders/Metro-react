@@ -177,3 +177,9 @@ export interface AddInvoiceItemsResponse {
   message?: string;
   data?: any;
 }
+
+export interface DeleteInvoiceItemResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}

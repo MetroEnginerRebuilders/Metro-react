@@ -99,6 +99,7 @@ export interface InvoiceDetailData {
   customer_id?: string;
   invoice_date: string;
   total_amount: string;
+  balance_amount?: string | number;
   invoice_status?: string;
   payment_status?: string;
   created_at?: string;
@@ -116,6 +117,7 @@ export interface InvoiceDetail extends Invoice {
   customer?: InvoiceCustomerDetails;
   job?: InvoiceJobDetails;
   items?: InvoiceItem[];
+  payment_status?: string;
 }
 
 export interface InvoiceDetailResponse {
@@ -182,4 +184,71 @@ export interface DeleteInvoiceItemResponse {
   success: boolean;
   message?: string;
   data?: any;
+}
+export interface BankAccount {
+  bank_account_id: string;
+  account_name?: string;
+  account_number?: string;
+  account_holder_name?: string;
+  bank_name?: string;
+  branch_name?: string;
+  ifsc_code?: string;
+  created_at?: string;
+  updated_at?: string;
+}
+
+export interface MakePaymentPayload {
+  invoice_id: string;
+  bank_account_id: string;
+  payment_date: string;
+  amount_paid: number;
+  status: boolean;
+  remarks?: string;
+}
+
+export interface MakePaymentRequest {
+  invoice_id: string;
+  bank_account_id: string;
+  payment_date: string;
+  amount_paid: number;
+  status: boolean;
+  remarks?: string;
+}
+
+export interface MakePaymentResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
+export interface InvoicePayment {
+  invoice_payment_id: string;
+  invoice_id: string;
+  bank_account_id: string;
+  amount_paid: string | number;
+  remarks?: string;
+  payment_date: string;
+  status: string | boolean;
+  created_at: string;
+  updated_at: string;
+  account_name?: string;
+  account_number?: string;
+  bank_name?: string;
+}
+
+export interface PaymentsSummary {
+  payment_count: number;
+  total_paid: number | string;
+}
+
+export interface PaymentDetailsData {
+  invoice_id: string;
+  summary: PaymentsSummary;
+  payments: InvoicePayment[];
+}
+
+export interface PaymentDetailsResponse {
+  success: boolean;
+  message?: string;
+  data?: PaymentDetailsData;
 }

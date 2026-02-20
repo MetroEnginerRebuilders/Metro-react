@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse, DeleteInvoiceItemResponse } from "../type/invoice";
+import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse, DeleteInvoiceItemResponse, MakePaymentPayload, MakePaymentResponse, BankAccount, PaymentDetailsResponse } from "../type/invoice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -105,6 +105,68 @@ export const deleteInvoiceItemApi = async (
   const token = sessionStorage.getItem("token");
   const response = await axios.delete(
     `${BASE_URL}/invoice/${invoiceId}/items/${invoiceItemId}`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const getBankAccountsApi = async (): Promise<{ success: boolean; data?: BankAccount[]; message?: string }> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/bank-account`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const makePaymentApi = async (
+  payload: MakePaymentPayload
+): Promise<MakePaymentResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.post(
+    `${BASE_URL}/invoice/payment`,
+    payload,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
+  // Normalize response to include success field
+  return {
+    success: true,
+    message: response.data.message,
+    data: response.data.data,
+  };
+};
+
+export const downloadInvoicePdfApi = async (
+  invoiceId: string
+): Promise<Blob> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(
+    `${BASE_URL}/invoice/${invoiceId}/download-pdf`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      responseType: "blob",
+    }
+  );
+  return response.data;
+};
+export const getPaymentDetailsApi = async (
+  invoiceId: string
+): Promise<PaymentDetailsResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(
+    `${BASE_URL}/invoice/${invoiceId}/payments`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

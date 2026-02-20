@@ -40,6 +40,8 @@ import createJob from "../Pages/Sidebar/Jobs/CreateJob/CreateJob.slice.ts";
 import invoiceList from "../Pages/Sidebar/Invoice/Invoice.slice.ts";
 import invoiceDetail from "../Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail.slice.ts";
 import addInvoiceItems from "../Pages/Sidebar/Invoice/InvoiceDetail/AddInvoiceItems/AddInvoiceItems.slice.ts";
+import payment from "../Pages/Sidebar/Invoice/InvoiceDetail/Payment/Payment.slice.ts";
+import paymentDetails from "../Pages/Sidebar/Invoice/InvoiceDetail/PaymentDetails/PaymentDetails.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -84,6 +86,8 @@ export const store = configureStore({
    invoiceList,
    invoiceDetail,
    addInvoiceItems,
+   payment,
+   paymentDetails,
   },
 });
 

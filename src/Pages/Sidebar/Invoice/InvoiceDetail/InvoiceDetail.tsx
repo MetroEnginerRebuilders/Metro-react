@@ -16,12 +16,14 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
-import { FiPlus, FiTrash2 } from "react-icons/fi";
+import { FiPlus, FiTrash2, FiPrinter } from "react-icons/fi";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import AddInvoiceItemsModal from "./AddInvoiceItems/AddInvoiceItemsModal";
-import { getInvoiceDetailsApi, deleteInvoiceItemApi } from "../../../../service/invoice";
+import PaymentModal from "./Payment/PaymentModal";
+import PaymentDetailsModal from "./PaymentDetails/PaymentDetailsModal";
+import { getInvoiceDetailsApi, deleteInvoiceItemApi, downloadInvoicePdfApi } from "../../../../service/invoice";
 import { formatCurrency, formatDate, formatInvoiceItemRemarks } from "../../../../utils/formatters";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
@@ -42,6 +44,9 @@ const InvoiceDetailPage = () => {
   const deleteLoading = useAppSelector((state) => state.addInvoiceItems.deleteLoading);
   const [appliedSearch, setAppliedSearch] = useState("");
   const [openAddModal, setOpenAddModal] = useState(false);
+  const [openPaymentModal, setOpenPaymentModal] = useState(false);
+  const [openPaymentDetailsModal, setOpenPaymentDetailsModal] = useState(false);
+  const [printLoading, setPrintLoading] = useState(false);
 
   const fetchInvoiceDetail = async () => {
     if (!invoiceId) return;
@@ -124,6 +129,58 @@ const InvoiceDetailPage = () => {
     }
   };
 
+  const handleOpenPayment = () => {
+    setOpenPaymentModal(true);
+  };
+
+  const handleClosePayment = () => {
+    setOpenPaymentModal(false);
+  };
+
+  const handlePaymentSuccess = () => {
+    // Refresh invoice details after successful payment
+    fetchInvoiceDetail();
+  };
+
+  const handleOpenPaymentDetails = () => {
+    setOpenPaymentDetailsModal(true);
+  };
+
+  const handleClosePaymentDetails = () => {
+    setOpenPaymentDetailsModal(false);
+  };
+
+  const handlePrintInvoice = async () => {
+    if (!invoiceId) return;
+    setPrintLoading(true);
+    try {
+      const pdfBlob = await downloadInvoicePdfApi(invoiceId);
+      // Create a temporary URL for the blob
+      const url = window.URL.createObjectURL(pdfBlob);
+      // Create a temporary anchor element to trigger download
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `invoice-${invoiceDetail?.invoice_number || invoiceId}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      // Clean up
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("Invoice downloaded successfully", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } catch (error: any) {
+      const errorMessage = error?.response?.data?.message || "Failed to download invoice";
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } finally {
+      setPrintLoading(false);
+    }
+  };
+
   const breadcrumbItems = [
     { label: "Home", path: "/" },
     { label: "Invoice", path: "/invoice" },
@@ -189,15 +246,17 @@ const InvoiceDetailPage = () => {
               <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
                 {formatCurrency(invoiceDetail.total_amount)}
               </Typography>
-              <Typography variant="caption" display="block" color="text.secondary" mt={1}>
-                Amount Paid: {formatCurrency(invoiceDetail?.job?.advance_amount || invoiceDetail.amount_paid)}
-              </Typography>
-              {invoiceDetail && parseFloat(invoiceDetail.total_amount?.toString() || "0") > 0 && (
-                <Typography variant="caption" display="block" color="text.secondary">
-                  Balance: {formatCurrency(
-                    parseFloat(invoiceDetail.total_amount.toString()) - parseFloat((invoiceDetail?.job?.advance_amount || 0).toString())
+              {invoiceDetail?.payment_status !== "closed" && invoiceDetail?.payment_status !== "paid" && (
+                <>
+                  <Typography variant="caption" display="block" color="text.secondary" mt={1}>
+                    Amount Paid: {formatCurrency(invoiceDetail?.job?.advance_amount || invoiceDetail.amount_paid)}
+                  </Typography>
+                  {invoiceDetail && parseFloat(invoiceDetail.total_amount?.toString() || "0") > 0 && (
+                    <Typography variant="caption" display="block" color="text.secondary">
+                      Balance: {formatCurrency(invoiceDetail.balance_amount ?? 0)}
+                    </Typography>
                   )}
-                </Typography>
+                </>
               )}
             </Box>
           </Box>
@@ -282,9 +341,33 @@ const InvoiceDetailPage = () => {
               <Button variant="contained" startIcon={<FiPlus />} onClick={handleOpenAdd}>
                 Add Item
               </Button>
-              <Button variant="contained" color="success">
-                Pay
+              <Tooltip title="Download Invoice PDF">
+                <Button
+                  variant="contained"
+                  color="info"
+                  startIcon={<FiPrinter />}
+                  onClick={handlePrintInvoice}
+                  disabled={printLoading}
+                >
+                  {printLoading ? "Downloading..." : "Print"}
+                </Button>
+              </Tooltip>
+              <Button
+                variant="contained"
+                color="info"
+                onClick={handleOpenPaymentDetails}
+              >
+                Payment Details
               </Button>
+              {invoiceDetail?.invoice_status !== "closed" && invoiceDetail?.payment_status !== "paid" && invoiceDetail?.payment_status !== "paid" && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleOpenPayment}
+                >
+                  Pay
+                </Button>
+              )}
             </Box>
           </Box>
 
@@ -350,6 +433,21 @@ const InvoiceDetailPage = () => {
         open={openAddModal}
         onClose={handleCloseAdd}
         onAddItems={handleAddItems}
+        invoiceId={invoiceId || ""}
+      />
+
+      <PaymentModal
+        open={openPaymentModal}
+        onClose={handleClosePayment}
+        invoiceId={invoiceId || ""}
+        totalAmount={invoiceDetail?.total_amount || 0}
+        balanceAmount={invoiceDetail?.balance_amount}
+        onPaymentSuccess={handlePaymentSuccess}
+      />
+
+      <PaymentDetailsModal
+        open={openPaymentDetailsModal}
+        onClose={handleClosePaymentDetails}
         invoiceId={invoiceId || ""}
       />
     </div>

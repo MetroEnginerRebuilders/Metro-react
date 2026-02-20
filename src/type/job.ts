@@ -6,6 +6,7 @@ export interface Job {
   start_date: string;
   description: string;
   received_items: string;
+  status: string
   amount_payable: string | number;
   advance_amount: string | number;
   created_at?: string;

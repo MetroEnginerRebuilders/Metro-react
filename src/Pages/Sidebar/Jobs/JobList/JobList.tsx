@@ -143,6 +143,7 @@ const JobList = () => {
                                 <TableCell style={{ fontWeight: "bold" }}>RECEIVED ITEMS</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>AMOUNT PAID</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>AMOUNT PAYABLE</TableCell>
+                                <TableCell style={{ fontWeight: "bold" }}>STATUS</TableCell>
                                 <TableCell align="center" style={{ fontWeight: "bold" }}>ACTIONS</TableCell>
                             </TableRow>
                         </TableHead>
@@ -180,6 +181,7 @@ const JobList = () => {
                                             <TableCell>{row.received_items}</TableCell>
                                             <TableCell>{formatCurrency(row.advance_amount)}</TableCell>
                                             <TableCell>{formatCurrency(row.amount_payable)}</TableCell>
+                                            <TableCell>{row.status}</TableCell>
                                             <TableCell align="center">
                                                 <Stack direction="row" spacing={1} justifyContent="center">
                                                     <Tooltip title="Edit">

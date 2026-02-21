@@ -57,10 +57,10 @@ const Expense = () => {
       if (response.success && response.data && response.pagination) {
         // Map backend pagination fields to frontend expected fields
         const mappedPagination = {
-          currentPage: response.pagination.currentPage,
-          totalPages: response.pagination.totalPages,
+          currentPage: Number(response.pagination.currentPage) || page,
+          totalPages: Number(response.pagination.totalPages) || 1,
           totalItems: response.pagination.totalItems || 0,
-          itemsPerPage: response.pagination.itemsPerPage,
+          itemsPerPage: Number(response.pagination.itemsPerPage) || 10,
           hasNextPage: response.pagination.hasNextPage,
           hasPreviousPage: response.pagination.hasPreviousPage
         };
@@ -217,8 +217,10 @@ const Expense = () => {
                 </TableRow>
               ) : (
                 list.map((row: ExpenseType, index: number) => {
+                  const pageNumber = Number(pagination?.currentPage) || 1;
+                  const pageSize = Number(pagination?.itemsPerPage) || 10;
                   const serialNumber = pagination
-                    ? (pagination.currentPage - 1) * pagination.itemsPerPage + index + 1
+                    ? (pageNumber - 1) * pageSize + index + 1
                     : index + 1;
 
                   return (

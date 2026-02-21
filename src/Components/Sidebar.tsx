@@ -11,7 +11,6 @@ import {
   FiTrendingUp,
   FiTrendingDown,
   FiFileText,
-  FiCreditCard,
   FiFile,
   FiMenu,
   FiX,

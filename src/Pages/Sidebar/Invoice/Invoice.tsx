@@ -7,15 +7,11 @@ import {
   TableRow,
   Paper,
   TextField,
-  Stack,
-  IconButton,
-  Tooltip,
   CircularProgress,
   Link,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 
@@ -78,9 +74,6 @@ const Invoice = () => {
       setCurrentPage(1);
     }
   };
-
-  const handleEdit = (_invoice: InvoiceType) => {};
-  const handleDelete = (_invoice: InvoiceType) => {};
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },

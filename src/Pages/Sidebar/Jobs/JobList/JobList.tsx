@@ -19,10 +19,11 @@ import { FiEdit, FiTrash2 } from "react-icons/fi";
 import { toast } from "react-toastify";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import CommonPagination from "../../../../Components/CommonPagination";
-import { getJobListApi } from "../../../../service/job";
+import { deleteJobApi, getJobListApi } from "../../../../service/job";
 import type { Job } from "../../../../type/job";
 import { formatCurrency, formatDate } from "../../../../utils/formatters";
 import CreateJob from "../CreateJob/CreateJob";
+import EditJob from "../EditJob/EditJob";
 
 const JobList = () => {
     const [searchTerm, setSearchTerm] = useState("");
@@ -30,6 +31,9 @@ const JobList = () => {
     const [loading, setLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [openModal, setOpenModal] = useState(false);
+    const [openEditModal, setOpenEditModal] = useState(false);
+    const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+    const [deletingJobId, setDeletingJobId] = useState<string | null>(null);
     const [pagination, setPagination] = useState<{
         currentPage: number;
         totalPages: number;
@@ -95,8 +99,50 @@ const JobList = () => {
         fetchJobs(currentPage, searchTerm);
     };
 
-    const handleEdit = (_job: Job) => { };
-    const handleDelete = (_job: Job) => { };
+    const handleOpenEditModal = (job: Job) => {
+        setSelectedJob(job);
+        setOpenEditModal(true);
+    };
+
+    const handleCloseEditModal = () => {
+        setOpenEditModal(false);
+        setSelectedJob(null);
+    };
+
+    const handleEditSuccess = () => {
+        handleCloseEditModal();
+        fetchJobs(currentPage, searchTerm);
+    };
+
+    const handleEdit = (job: Job) => {
+        handleOpenEditModal(job);
+    };
+    const handleDelete = async (job: Job) => {
+        if (!job.job_id) return;
+        setDeletingJobId(job.job_id);
+        try {
+            const response = await deleteJobApi(job.job_id);
+            if (response.success) {
+                toast.success("Job deleted successfully", {
+                    position: "top-center",
+                    autoClose: 3000,
+                });
+                fetchJobs(currentPage, searchTerm);
+            } else {
+                toast.error(response.message || "Failed to delete job", {
+                    position: "top-center",
+                    autoClose: 3000,
+                });
+            }
+        } catch (error: any) {
+            toast.error(error?.response?.data?.message || "Failed to delete job", {
+                position: "top-center",
+                autoClose: 3000,
+            });
+        } finally {
+            setDeletingJobId(null);
+        }
+    };
 
     const breadcrumbItems = [
         { label: "Home", path: "/" },
@@ -141,8 +187,7 @@ const JobList = () => {
                                 <TableCell style={{ fontWeight: "bold" }}>START DATE</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>DESCRIPTION</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>RECEIVED ITEMS</TableCell>
-                                <TableCell style={{ fontWeight: "bold" }}>AMOUNT PAID</TableCell>
-                                <TableCell style={{ fontWeight: "bold" }}>AMOUNT PAYABLE</TableCell>
+                                <TableCell style={{ fontWeight: "bold" }}>ADVANCE PAID</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>STATUS</TableCell>
                                 <TableCell align="center" style={{ fontWeight: "bold" }}>ACTIONS</TableCell>
                             </TableRow>
@@ -166,6 +211,7 @@ const JobList = () => {
                                     const serialNumber = pagination
                                         ? (pagination.currentPage - 1) * pagination.itemsPerPage + index + 1
                                         : index + 1;
+                                    const isCompleted = row.status?.toLowerCase() === "completed";
 
                                     return (
                                         <TableRow
@@ -180,29 +226,32 @@ const JobList = () => {
                                             <TableCell>{row.description}</TableCell>
                                             <TableCell>{row.received_items}</TableCell>
                                             <TableCell>{formatCurrency(row.advance_amount)}</TableCell>
-                                            <TableCell>{formatCurrency(row.amount_payable)}</TableCell>
                                             <TableCell>{row.status}</TableCell>
                                             <TableCell align="center">
-                                                <Stack direction="row" spacing={1} justifyContent="center">
-                                                    <Tooltip title="Edit">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="primary"
-                                                            onClick={() => handleEdit(row)}
-                                                        >
-                                                            <FiEdit />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                    <Tooltip title="Delete">
-                                                        <IconButton
-                                                            size="small"
-                                                            color="error"
-                                                            onClick={() => handleDelete(row)}
-                                                        >
-                                                            <FiTrash2 />
-                                                        </IconButton>
-                                                    </Tooltip>
-                                                </Stack>
+                                                {!isCompleted && (
+                                                    <Stack direction="row" spacing={1} justifyContent="center">
+                                                        <Tooltip title="Edit">
+                                                            <IconButton
+                                                                size="small"
+                                                                color="primary"
+                                                                onClick={() => handleEdit(row)}
+                                                                disabled={deletingJobId === row.job_id}
+                                                            >
+                                                                <FiEdit />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                        <Tooltip title="Delete">
+                                                            <IconButton
+                                                                size="small"
+                                                                color="error"
+                                                                onClick={() => handleDelete(row)}
+                                                                disabled={deletingJobId === row.job_id}
+                                                            >
+                                                                <FiTrash2 />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    </Stack>
+                                                )}
                                             </TableCell>
                                         </TableRow>
                                     );
@@ -226,6 +275,7 @@ const JobList = () => {
             )}
 
             <CreateJob open={openModal} onClose={handleCloseModal} onSuccess={handleCloseModal} />
+            <EditJob open={openEditModal} onClose={handleCloseEditModal} onSuccess={handleEditSuccess} job={selectedJob} />
         </div>
     );
 };

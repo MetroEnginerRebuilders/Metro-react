@@ -2,6 +2,7 @@ export interface Job {
   job_id: string;
   job_code?: string;
   job_number?: string;
+  customer_id?: string;
   customer_name: string;
   start_date: string;
   description: string;
@@ -9,6 +10,7 @@ export interface Job {
   status: string
   amount_payable: string | number;
   advance_amount: string | number;
+  bank_account_id?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -64,6 +66,33 @@ export interface CreateJobRequest {
 }
 
 export interface CreateJobResponse {
+  success: boolean;
+  message?: string;
+  data?: Job;
+}
+
+export interface DeleteJobResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}
+
+export interface UpdateJobRequest {
+  customerId: string;
+  description: string;
+  startDate: string;
+  receivedItems: string;
+  advanceAmount: string;
+  bankAccountId: string;
+}
+
+export interface UpdateJobResponse {
+  success: boolean;
+  message?: string;
+  data?: Job;
+}
+
+export interface GetJobResponse {
   success: boolean;
   message?: string;
   data?: Job;

@@ -123,7 +123,6 @@ const Invoice = () => {
                 <TableCell style={{ fontWeight: "bold" }}>INVOICE DATE</TableCell>
                 <TableCell style={{ fontWeight: "bold" }}> AMOUNT</TableCell>
                 <TableCell style={{ fontWeight: "bold" }}>STATUS</TableCell>
-                <TableCell align="center" style={{ fontWeight: "bold" }}>ACTIONS</TableCell>
               </TableRow>
             </TableHead>
 
@@ -167,28 +166,7 @@ const Invoice = () => {
                       <TableCell>{formatDate(row.invoice_date)}</TableCell>
                       <TableCell>{formatCurrency(row.total_amount)}</TableCell>
                       <TableCell>{row.invoice_status || "-"}</TableCell>
-                      <TableCell align="center">
-                        <Stack direction="row" spacing={1} justifyContent="center">
-                          <Tooltip title="Edit">
-                            <IconButton
-                              size="small"
-                              color="primary"
-                              onClick={() => handleEdit(row)}
-                            >
-                              <FiEdit />
-                            </IconButton>
-                          </Tooltip>
-                          <Tooltip title="Delete">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              onClick={() => handleDelete(row)}
-                            >
-                              <FiTrash2 />
-                            </IconButton>
-                          </Tooltip>
-                        </Stack>
-                      </TableCell>
+                     
                     </TableRow>
                   );
                 })

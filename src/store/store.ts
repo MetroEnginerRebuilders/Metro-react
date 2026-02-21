@@ -37,6 +37,7 @@ import createExpense from "../Pages/Sidebar/Expense/CreateExpense/CreateExpense.
 import editExpense from "../Pages/Sidebar/Expense/EditExpense/EditExpense.slice.ts";
 import createStock from "../Pages/Sidebar/Stock/CreateStock/CreateStock.slice.ts";
 import createJob from "../Pages/Sidebar/Jobs/CreateJob/CreateJob.slice.ts";
+import editJob from "../Pages/Sidebar/Jobs/EditJob/EditJob.slice.ts";
 import invoiceList from "../Pages/Sidebar/Invoice/Invoice.slice.ts";
 import invoiceDetail from "../Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail.slice.ts";
 import addInvoiceItems from "../Pages/Sidebar/Invoice/InvoiceDetail/AddInvoiceItems/AddInvoiceItems.slice.ts";
@@ -83,6 +84,7 @@ export const store = configureStore({
    editExpense,
    createStock,
    createJob,
+   editJob,
    invoiceList,
    invoiceDetail,
    addInvoiceItems,

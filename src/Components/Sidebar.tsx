@@ -23,14 +23,14 @@ const tabs = [
   { to: "/search", label: "Search", key: "search" },
   { to: "/", label: "Dashboard", key: "dashboard" },
   { to: "/master", label: "Master Data", key: "master" },
-  { to: "/monthly-reports", label: "Monthly Reports", key: "reports" },
   { to: "/stock", label: "Stock", key: "stock" },
   { to: "/jobs", label: "Jobs", key: "jobs" },
-  { to: "/transaction-logs", label: "Transaction Logs", key: "transactions" },
+    { to: "/invoice", label: "Invoice", key: "invoice" },
   { to: "/income", label: "Income", key: "income" },
   { to: "/expenditure", label: "Expenditure", key: "expenditure" },
-  { to: "/invoice", label: "Invoice", key: "invoice" },
-  { to: "/payment", label: "Payment", key: "payment" },
+  // { to: "/payment", label: "Payment", key: "payment" },
+    { to: "/monthly-reports", label: "Monthly Reports", key: "reports" },
+    { to: "/transaction-logs", label: "Transaction Logs", key: "transactions" },
   { to: "/statement", label: "Statement", key: "statement" }
 ];
 
@@ -38,14 +38,14 @@ const iconsMap: Record<string, ReactElement> = {
   search: <FiSearch className="w-5 h-5" />,
   dashboard: <FiGrid className="w-5 h-5" />,
   master: <FiDatabase className="w-5 h-5" />,
-  reports: <FiBarChart2 className="w-5 h-5" />,
   stock: <FiPackage className="w-5 h-5" />,
   jobs: <FiBriefcase className="w-5 h-5" />,
-  transactions: <FiList className="w-5 h-5" />,
+    invoice: <FiFileText className="w-5 h-5" />,
   income: <FiTrendingUp className="w-5 h-5" />,
   expenditure: <FiTrendingDown className="w-5 h-5" />,
-  invoice: <FiFileText className="w-5 h-5" />,
-  payment: <FiCreditCard className="w-5 h-5" />,
+  // payment: <FiCreditCard className="w-5 h-5" />,
+    reports: <FiBarChart2 className="w-5 h-5" />,
+    transactions: <FiList className="w-5 h-5" />,
   statement: <FiFile className="w-5 h-5" />
 };
 

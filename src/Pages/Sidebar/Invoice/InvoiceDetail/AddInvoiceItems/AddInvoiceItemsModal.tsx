@@ -30,12 +30,14 @@ import {
   getStockTransactionModelsApi,
   getStockTransactionSparesApi,
   addInvoiceItemsApi,
+  getBankAccountsApi,
 } from "../../../../../service/invoice";
 import type {
   InvoiceAddItem,
   ModelData,
   SpareData,
   AddInvoiceItemPayload,
+  BankAccount,
 } from "../../../../../type/invoice";
 import { useState, useEffect } from "react";
 
@@ -52,6 +54,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     (state) => state.addInvoiceItems
   );
 
+  const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
 
   const [addItemsRows, setAddItemsRows] = useState<InvoiceAddItem[]>([
     {
@@ -64,6 +67,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
       remarks: "",
       quantity: "1",
       unit_price: "0",
+      bank_account_id: "",
     },
   ]);
   const [modelsByIndex, setModelsByIndex] = useState<Record<string, ModelData[]>>({});
@@ -77,11 +81,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
   const fetchAddItemsDropdowns = async () => {
     dispatch(setLoading(true));
     try {
-      const [typesRes, companiesRes] = await Promise.all([
+      const [typesRes, companiesRes, bankAccountsRes] = await Promise.all([
         getInvoiceItemTypesApi(),
         getStockTransactionCompaniesApi(),
+        getBankAccountsApi(),
       ]);
-
 
       if (typesRes.success && typesRes.data) {
         dispatch(setItemTypes(typesRes.data));
@@ -90,6 +94,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
 
       if (companiesRes.success && companiesRes.data) {
         dispatch(setCompanies(companiesRes.data));
+      }
+
+      if (bankAccountsRes.success && bankAccountsRes.data) {
+        setBankAccounts(bankAccountsRes.data);
       }
     } catch (error: any) {
       dispatch(setError("Failed to fetch dropdown data"));
@@ -115,6 +123,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
         remarks: "",
         quantity: "1",
         unit_price: "0",
+        bank_account_id: "",
       },
     ]);
   };
@@ -173,6 +182,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
 
   const handleUnitPriceChange = (tempId: string, value: string) => {
     handleRowChange(tempId, "unit_price", value);
+  };
+
+  const handleBankAccountChange = (tempId: string, bankAccountId: string) => {
+    handleRowChange(tempId, "bank_account_id", bankAccountId);
   };
 
   const handleSpareChange = (tempId: string, spareId: string) => {
@@ -248,6 +261,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
       const isWork = itemTypeCode === "WORK";
       const isSpare = itemTypeCode === "SPARE";
       const isDiscount = itemTypeCode === "DISCOUNT";
+      const isCommission = itemTypeCode === "COMMISSION";
 
       if (!row.item_type_id) {
         toast.error(`Please select item type for row ${i + 1}`);
@@ -299,6 +313,21 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
           return;
         }
       }
+      // COMMISSION validation: remarks, bank_account_id, and unit_price are mandatory
+      else if (isCommission) {
+        if (!row.remarks || row.remarks.trim() === "") {
+          toast.error(`Please enter remarks for row ${i + 1} (COMMISSION)`);
+          return;
+        }
+        if (!row.bank_account_id) {
+          toast.error(`Please select bank account for row ${i + 1} (COMMISSION)`);
+          return;
+        }
+        if (!row.unit_price || parseFloat(row.unit_price) < 0) {
+          toast.error(`Please enter valid unit price for row ${i + 1} (COMMISSION)`);
+          return;
+        }
+      }
     }
 
     // Transform data to API payload format
@@ -311,6 +340,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
       remarks: row.remarks || undefined,
       quantity: parseFloat(row.quantity),
       unit_price: parseFloat(row.unit_price),
+      bank_account_id: row.bank_account_id || undefined,
     }));
 
     try {
@@ -351,6 +381,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
         remarks: "",
         quantity: "1",
         unit_price: "0",
+        bank_account_id: "",
       },
     ]);
     setModelsByIndex({});
@@ -387,6 +418,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                   Item Type <span style={{ color: "red" }}>*</span>
                 </TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Type of Work</TableCell>
+                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Bank Account</TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Company</TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Model</TableCell>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Spare</TableCell>
@@ -407,6 +439,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                 const isWork = itemTypeCode === "WORK";
                 const isSpare = itemTypeCode === "SPARE";
                 const isDiscount = itemTypeCode === "DISCOUNT";
+                const isCommission = itemTypeCode === "COMMISSION";
 
                 return (
                 <TableRow key={row.tempId} sx={{ height: "40px", borderBottom: "none" }}>
@@ -442,7 +475,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       placeholder={isWork ? "Type (Required)" : "Type"}
                       fullWidth
                       variant="outlined"
-                      disabled={isSpare || isDiscount}
+                      disabled={isSpare || isDiscount || isCommission}
                       error={isWork && !row.type_of_work}
                       sx={{
                         "& .MuiOutlinedInput-root": {
@@ -453,6 +486,34 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                           height: "24px",
                         },
                       }}
+                    />
+                  </TableCell>
+                  <TableCell style={{ flex: 1, padding: "4px" }}>
+                    <Autocomplete
+                      size="small"
+                      options={bankAccounts}
+                      getOptionLabel={(option) =>
+                        typeof option === "string" ? option : (option.account_name || option.account_number || "")
+                      }
+                      value={
+                        bankAccounts.find((acc) => acc.bank_account_id === row.bank_account_id) ||
+                        null
+                      }
+                      onChange={(_, newValue) => {
+                        handleBankAccountChange(row.tempId, newValue?.bank_account_id || "");
+                      }}
+                      disabled={loading || !isCommission}
+                      isOptionEqualToValue={(option, value) =>
+                        option.bank_account_id === value?.bank_account_id
+                      }
+                      renderInput={(params) => (
+                        <TextField 
+                          {...params} 
+                          placeholder={isCommission ? "Select (Required)" : "Select"}
+                          error={isCommission && !row.bank_account_id}
+                        />
+                      )}
+                      noOptionsText="No bank accounts available"
                     />
                   </TableCell>
                   <TableCell style={{ flex: 1, padding: "4px" }}>
@@ -472,7 +533,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                           newValue?.company_id || ""
                         );
                       }}
-                      disabled={loading || isWork || isDiscount}
+                      disabled={loading || isWork || isDiscount || isCommission}
                       isOptionEqualToValue={(option, value) =>
                         option.company_id === value?.company_id
                       }
@@ -501,7 +562,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       onChange={(_, newValue) => {
                         handleModelChange(row.tempId, newValue?.model_id || "");
                       }}
-                      disabled={!row.company_id || loading || isWork || isDiscount}
+                      disabled={!row.company_id || loading || isWork || isDiscount || isCommission}
                       isOptionEqualToValue={(option, value) =>
                         option.model_id === value?.model_id
                       }
@@ -530,7 +591,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       onChange={(_, newValue) => {
                         handleSpareChange(row.tempId, newValue?.spare_id || "");
                       }}
-                      disabled={!row.model_id || loading || isWork || isDiscount}
+                      disabled={!row.model_id || loading || isWork || isDiscount || isCommission}
                       isOptionEqualToValue={(option, value) =>
                         option.spare_id === value?.spare_id
                       }
@@ -549,9 +610,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       size="small"
                       value={row.remarks}
                       onChange={(e) => handleRemarksChange(row.tempId, e.target.value)}
-                      placeholder="Remarks"
+                      placeholder={isCommission ? "Remarks (Required)" : "Remarks"}
                       fullWidth
                       variant="outlined"
+                      error={isCommission && !row.remarks}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           height: "40px",
@@ -571,7 +633,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       onChange={(e) => handleQuantityChange(row.tempId, e.target.value)}
                       placeholder={(isWork || isSpare) ? "Req'd" : "Qty"}
                       inputProps={{ min: 1, step: "1" }}
-                      disabled={isDiscount}
+                      disabled={isDiscount || isCommission}
                       error={(isWork || isSpare) && !row.quantity}
                       variant="outlined"
                       sx={{

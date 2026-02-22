@@ -62,6 +62,9 @@ export interface InvoiceItem {
   company_name?: string;
   model_name?: string;
   spare_name?: string;
+  bank_account_id?: string | null;
+  account_name?: string;
+  account_number?: string;
   created_at?: string;
   updated_at?: string;
 }
@@ -157,6 +160,7 @@ export interface InvoiceAddItem {
   remarks: string;
   quantity: string;
   unit_price: string;
+  bank_account_id: string;
 }
 
 export interface AddInvoiceItemPayload {
@@ -168,6 +172,7 @@ export interface AddInvoiceItemPayload {
   remarks?: string;
   quantity: number;
   unit_price: number;
+  bank_account_id?: string;
 }
 
 export interface AddInvoiceItemsRequest {

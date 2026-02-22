@@ -1,5 +1,6 @@
 
 import {
+    Box,
     Table,
     TableBody,
     TableCell,
@@ -8,7 +9,6 @@ import {
     TableRow,
     Paper,
     TextField,
-    Stack,
     IconButton,
     Tooltip,
     CircularProgress,
@@ -228,18 +228,24 @@ const JobList = () => {
                                             <TableCell>{formatCurrency(row.advance_amount)}</TableCell>
                                             <TableCell>{row.status}</TableCell>
                                             <TableCell align="center">
-                                                {!isCompleted && (
-                                                    <Stack direction="row" spacing={1} justifyContent="center">
-                                                        <Tooltip title="Edit">
-                                                            <IconButton
-                                                                size="small"
-                                                                color="primary"
-                                                                onClick={() => handleEdit(row)}
-                                                                disabled={deletingJobId === row.job_id}
-                                                            >
-                                                                <FiEdit />
-                                                            </IconButton>
-                                                        </Tooltip>
+                                                <Box
+                                                    display="grid"
+                                                    gridTemplateColumns="repeat(2, 32px)"
+                                                    columnGap={1}
+                                                    justifyContent="center"
+                                                    alignItems="center"
+                                                >
+                                                    <Tooltip title="Edit">
+                                                        <IconButton
+                                                            size="small"
+                                                            color="primary"
+                                                            onClick={() => handleEdit(row)}
+                                                            disabled={deletingJobId === row.job_id}
+                                                        >
+                                                            <FiEdit />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    {!isCompleted ? (
                                                         <Tooltip title="Delete">
                                                             <IconButton
                                                                 size="small"
@@ -250,8 +256,10 @@ const JobList = () => {
                                                                 <FiTrash2 />
                                                             </IconButton>
                                                         </Tooltip>
-                                                    </Stack>
-                                                )}
+                                                    ) : (
+                                                        <Box width={32} height={32} />
+                                                    )}
+                                                </Box>
                                             </TableCell>
                                         </TableRow>
                                     );

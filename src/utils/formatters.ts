@@ -42,6 +42,8 @@ export const formatInvoiceItemRemarks = (item: {
   company_name?: string;
   spare_name?: string;
   model_name?: string;
+  account_name?: string;
+  account_number?: string;
 }): string => {
   if (!item.item_type_code) return "-";
 
@@ -50,12 +52,18 @@ export const formatInvoiceItemRemarks = (item: {
       return item.item_type_code;
     case "WORK":
       return item.remarks || "-";
+    case "COMMISSION":
+      const parts = ["Commission"];
+      if (item.remarks) parts.push(item.remarks);
+      if (item.account_name) parts.push(item.account_name);
+      else if (item.account_number) parts.push(item.account_number);
+      return parts.length > 1 ? parts.join("-") : (item.remarks || "-");
     case "SPARE":
-      const parts = [];
-      if (item.company_name) parts.push(item.company_name);
-      if (item.spare_name) parts.push(item.spare_name);
-      if (item.model_name) parts.push(`(${item.model_name})`);
-      return parts.length > 0 ? parts.join("-") : "-";
+      const spareParts = [];
+      if (item.company_name) spareParts.push(item.company_name);
+      if (item.spare_name) spareParts.push(item.spare_name);
+      if (item.model_name) spareParts.push(`(${item.model_name})`);
+      return spareParts.length > 0 ? spareParts.join("-") : "-";
     default:
       return item.remarks || "-";
   }

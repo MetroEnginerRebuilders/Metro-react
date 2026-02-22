@@ -246,7 +246,7 @@ const InvoiceDetailPage = () => {
               <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
                 {formatCurrency(invoiceDetail.total_amount)}
               </Typography>
-              {invoiceDetail?.payment_status !== "closed" && invoiceDetail?.payment_status !== "paid" && (
+              {/* {invoiceDetail?.payment_status !== "closed" && invoiceDetail?.payment_status !== "paid" && (
                 <>
                   <Typography variant="caption" display="block" color="text.secondary" mt={1}>
                     Amount Paid: {formatCurrency(invoiceDetail?.job?.advance_amount || invoiceDetail.amount_paid)}
@@ -257,7 +257,7 @@ const InvoiceDetailPage = () => {
                     </Typography>
                   )}
                 </>
-              )}
+              )} */}
             </Box>
           </Box>
         </Paper>
@@ -359,7 +359,6 @@ const InvoiceDetailPage = () => {
               >
                 Payment Details
               </Button>
-              {invoiceDetail?.invoice_status !== "closed" && invoiceDetail?.payment_status !== "paid" && invoiceDetail?.payment_status !== "paid" && (
                 <Button
                   variant="contained"
                   color="success"
@@ -367,7 +366,6 @@ const InvoiceDetailPage = () => {
                 >
                   Pay
                 </Button>
-              )}
             </Box>
           </Box>
 

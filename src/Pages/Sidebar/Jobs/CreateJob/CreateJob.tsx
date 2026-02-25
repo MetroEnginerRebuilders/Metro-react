@@ -40,8 +40,12 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
   useEffect(() => {
     if (open) {
       fetchDropdownData();
+      if (!formState.start_date) {
+        const today = new Date().toISOString().split("T")[0];
+        dispatch(setField({ field: "start_date", value: today }));
+      }
     }
-  }, [open]);
+  }, [open, dispatch, formState.start_date]);
 
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
@@ -115,28 +119,14 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
       return false;
     }
 
-    if (!formState.advance_amount?.trim()) {
-      toast.error("Advance amount is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return false;
-    }
-
-    if (isNaN(parseFloat(formState.advance_amount))) {
-      toast.error("Advance amount must be a valid number", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return false;
-    }
-
-    if (!formState.bank_account_id?.trim()) {
-      toast.error("Bank account is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return false;
+    if (formState.advance_amount?.trim()) {
+      if (isNaN(parseFloat(formState.advance_amount))) {
+        toast.error("Advance amount must be a valid number", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        return false;
+      }
     }
 
     return true;
@@ -251,7 +241,6 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
             value={formState.advance_amount}
             onChange={(e) => handleChange("advance_amount", e.target.value)}
             fullWidth
-            required
             size="small"
             inputProps={{ min: 0, step: "0.01" }}
           />
@@ -263,7 +252,6 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
             options={bankAccountOptions}
             loading={loadingDropdowns}
             disabled={loadingDropdowns}
-            required
             size="small"
           />
         </Box>

@@ -102,6 +102,7 @@ export interface InvoiceDetailData {
   customer_id?: string;
   invoice_date: string;
   total_amount: string;
+  amount_paid?: string | number;
   balance_amount?: string | number;
   invoice_status?: string;
   payment_status?: string;
@@ -243,7 +244,9 @@ export interface InvoicePayment {
 
 export interface PaymentsSummary {
   payment_count: number;
+  total_amount: number | string;
   total_paid: number | string;
+  balance_amount: number | string;
 }
 
 export interface PaymentDetailsData {

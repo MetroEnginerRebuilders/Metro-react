@@ -48,8 +48,12 @@ const CreateIncome = ({ open, onClose }: CreateIncomeProps) => {
   useEffect(() => {
     if (open) {
       fetchDropdownData();
+      if (!transaction_date) {
+        const today = new Date().toISOString().split("T")[0];
+        dispatch(setField({ field: "transaction_date", value: today }));
+      }
     }
-  }, [open]);
+  }, [open, dispatch, transaction_date]);
 
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
@@ -239,6 +243,9 @@ const CreateIncome = ({ open, onClose }: CreateIncomeProps) => {
             size="small"
             InputLabelProps={{
               shrink: true,
+            }}
+            inputProps={{
+              max: new Date().toISOString().split("T")[0],
             }}
           />
 

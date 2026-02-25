@@ -23,7 +23,7 @@ import Breadcrumb from "../../../../Components/Breadcrumb";
 import AddInvoiceItemsModal from "./AddInvoiceItems/AddInvoiceItemsModal";
 import PaymentModal from "./Payment/PaymentModal";
 import PaymentDetailsModal from "./PaymentDetails/PaymentDetailsModal";
-import { getInvoiceDetailsApi, deleteInvoiceItemApi, downloadInvoicePdfApi } from "../../../../service/invoice";
+import { getInvoiceDetailsApi, deleteInvoiceItemApi, downloadInvoicePdfApi, getPaymentDetailsApi } from "../../../../service/invoice";
 import { formatCurrency, formatDate, formatInvoiceItemRemarks } from "../../../../utils/formatters";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
@@ -47,6 +47,11 @@ const InvoiceDetailPage = () => {
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [openPaymentDetailsModal, setOpenPaymentDetailsModal] = useState(false);
   const [printLoading, setPrintLoading] = useState(false);
+  const [paymentSummary, setPaymentSummary] = useState<{
+    total_amount: number | string;
+    total_paid: number | string;
+    balance_amount: number | string;
+  } | null>(null);
 
   const fetchInvoiceDetail = async () => {
     if (!invoiceId) return;
@@ -57,6 +62,17 @@ const InvoiceDetailPage = () => {
         dispatch(setInvoiceDetails(response.data));
       } else {
         dispatch(setError("Failed to fetch invoice detail"));
+      }
+
+      try {
+        const paymentDetailsResponse = await getPaymentDetailsApi(invoiceId);
+        if (paymentDetailsResponse.success && paymentDetailsResponse.data?.summary) {
+          setPaymentSummary(paymentDetailsResponse.data.summary);
+        } else {
+          setPaymentSummary(null);
+        }
+      } catch {
+        setPaymentSummary(null);
       }
     } catch (error: any) {
       const errorMessage =
@@ -244,20 +260,16 @@ const InvoiceDetailPage = () => {
                 Total Amount
               </Typography>
               <Typography variant="h6" sx={{ color: "primary.main", fontWeight: 600 }}>
-                {formatCurrency(invoiceDetail.total_amount)}
+                {formatCurrency(paymentSummary?.total_amount ?? 0)}
               </Typography>
-              {/* {invoiceDetail?.payment_status !== "closed" && invoiceDetail?.payment_status !== "paid" && (
-                <>
-                  <Typography variant="caption" display="block" color="text.secondary" mt={1}>
-                    Amount Paid: {formatCurrency(invoiceDetail?.job?.advance_amount || invoiceDetail.amount_paid)}
-                  </Typography>
-                  {invoiceDetail && parseFloat(invoiceDetail.total_amount?.toString() || "0") > 0 && (
-                    <Typography variant="caption" display="block" color="text.secondary">
-                      Balance: {formatCurrency(invoiceDetail.balance_amount ?? 0)}
-                    </Typography>
-                  )}
-                </>
-              )} */}
+              <Typography variant="caption" display="block" color="text.secondary" mt={1}>
+                Total Amount Paid: {formatCurrency(paymentSummary?.total_paid ?? 0)}
+              </Typography>
+              {parseFloat((paymentSummary?.total_amount ?? 0).toString()) > 0 && (
+                <Typography variant="caption" display="block" color="text.secondary">
+                  Balance Amount: {formatCurrency(paymentSummary?.balance_amount ?? 0)}
+                </Typography>
+              )}
             </Box>
           </Box>
         </Paper>
@@ -378,7 +390,9 @@ const InvoiceDetailPage = () => {
                   <TableCell style={{ fontWeight: "bold" }}>QUANTITY</TableCell>
                   <TableCell style={{ fontWeight: "bold" }}>UNIT PRICE</TableCell>
                   <TableCell style={{ fontWeight: "bold" }}>TOTAL PRICE</TableCell>
+                  {invoiceDetail?.invoice_status?.toLowerCase() !== "closed" && (
                   <TableCell align="center" style={{ fontWeight: "bold" }}>ACTIONS</TableCell>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -404,16 +418,18 @@ const InvoiceDetailPage = () => {
                       <TableCell>{formatCurrency(item.total_price)}</TableCell>
                       <TableCell align="center">
                         <Stack direction="row" spacing={1} justifyContent="center">
-                          <Tooltip title="Delete">
-                            <IconButton
-                              size="small"
-                              color="error"
-                              disabled={deleteLoading}
-                              onClick={() => handleDeleteItem(item.invoice_item_id)}
-                            >
-                              <FiTrash2 />
-                            </IconButton>
-                          </Tooltip>
+                          {invoiceDetail?.invoice_status?.toLowerCase() !== "closed" && (
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                disabled={deleteLoading}
+                                onClick={() => handleDeleteItem(item.invoice_item_id)}
+                              >
+                                <FiTrash2 />
+                              </IconButton>
+                            </Tooltip>
+                          )}
                         </Stack>
                       </TableCell>
                     </TableRow>

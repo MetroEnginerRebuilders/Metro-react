@@ -229,6 +229,9 @@ const EditExpense = ({ open, onClose, expense }: EditExpenseProps) => {
             InputLabelProps={{
               shrink: true,
             }}
+            inputProps={{
+              max: new Date().toISOString().split("T")[0],
+            }}
           />
 
           <TextField

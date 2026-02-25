@@ -15,7 +15,10 @@ import type { CreateStaffSalaryState } from "../../../type/staffSalary";
 import type { Staff } from "../../../type/staff";
 import type { BankAccount } from "../../../type/bankAccount";
 import type { SalaryType } from "../../../type/salaryType";
-import { createStaffSalaryApi } from "../../../service/staffSalary";
+import {
+  createStaffSalaryApi,
+  getStaffSalaryMonthSummaryApi,
+} from "../../../service/staffSalary";
 import { getActiveStaffListApi } from "../../../service/staff";
 import { getBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
@@ -34,9 +37,14 @@ function CreateStaffSalary() {
   const [salaryTypes, setSalaryTypes] = useState<SalaryType[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingDropdowns, setLoadingDropdowns] = useState(false);
+  const [loadingSummary, setLoadingSummary] = useState(false);
 
   useEffect(() => {
     fetchDropdownData();
+    if (!effective_date) {
+      const today = new Date().toISOString().split("T")[0];
+      dispatch(setField({ field: "effective_date", value: today }));
+    }
   }, []);
 
   const fetchDropdownData = async () => {
@@ -70,6 +78,42 @@ function CreateStaffSalary() {
   const handleChange = (field: keyof CreateStaffSalaryState, value: string) => {
     dispatch(setField({ field, value }));
   };
+
+  const fetchStaffSalarySummary = async (staffId: string) => {
+    setLoadingSummary(true);
+    try {
+      const response = await getStaffSalaryMonthSummaryApi(staffId);
+      if (response.success && response.data) {
+        const balanceValue =
+          response.data.balance_salary ??
+          response.data.balance_amount ??
+          0;
+        dispatch(setField({ field: "amount", value: String(balanceValue) }));
+      } else {
+        dispatch(setField({ field: "amount", value: "" }));
+      }
+    } catch (error: any) {
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to fetch staff salary summary",
+        {
+          position: "top-center",
+          autoClose: 3000,
+        }
+      );
+    } finally {
+      setLoadingSummary(false);
+    }
+  };
+
+  useEffect(() => {
+    if (!staff_id) {
+      dispatch(setField({ field: "amount", value: "" }));
+      return;
+    }
+
+    fetchStaffSalarySummary(staff_id);
+  }, [staff_id, dispatch]);
 
   // Prepare options for SearchableSelect
   const staffOptions = useMemo(() => 
@@ -234,6 +278,9 @@ function CreateStaffSalary() {
               InputLabelProps={{
                 shrink: true,
               }}
+              inputProps={{
+                max: new Date().toISOString().split("T")[0],
+              }}
             />
 
             <TextField
@@ -244,6 +291,7 @@ function CreateStaffSalary() {
               required
               size="small"
               type="text"
+              disabled={loadingSummary}
               inputProps={{ step: "0.01", min: "0" }}
             />
 

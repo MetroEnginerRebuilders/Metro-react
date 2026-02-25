@@ -13,6 +13,14 @@ export interface StaffSalary {
   salary_type: string;
 }
 
+export interface StaffSalaryMonthSummary {
+  payment_count?: number;
+  total_amount?: number | string;
+  total_paid?: number | string;
+  balance_amount?: number | string;
+  balance_salary?: number | string;
+}
+
 export interface StaffSalaryFormData {
   staffId: string;
   bankAccountId: string;

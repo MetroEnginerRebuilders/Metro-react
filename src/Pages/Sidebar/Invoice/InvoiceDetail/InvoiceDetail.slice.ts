@@ -30,7 +30,7 @@ const invoiceDetailSlice = createSlice({
         invoice_date: invoice.invoice_date,
         total_amount: invoice.total_amount,
         balance_amount: invoice.balance_amount,
-        amount_paid: "0",
+        amount_paid: invoice.amount_paid ?? "0",
         invoice_status: invoice.invoice_status,
         created_at: invoice.created_at,
         updated_at: invoice.updated_at,

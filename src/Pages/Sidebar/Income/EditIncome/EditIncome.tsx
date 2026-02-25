@@ -243,6 +243,9 @@ const EditIncome = ({ open, onClose, income }: EditIncomeProps) => {
             InputLabelProps={{
               shrink: true,
             }}
+            inputProps={{
+              max: new Date().toISOString().split("T")[0],
+            }}
           />
 
           <TextField

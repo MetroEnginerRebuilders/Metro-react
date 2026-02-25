@@ -47,6 +47,10 @@ function CreateStock() {
   useEffect(() => {
     // Fetch all dropdown data
     fetchDropdownData();
+    if (!formState.orderDate) {
+      const today = new Date().toISOString().split("T")[0];
+      dispatch(setField({ field: "orderDate", value: today }));
+    }
   }, [dispatch]);
 
   const fetchDropdownData = async () => {
@@ -360,6 +364,9 @@ function CreateStock() {
                   value={formState.orderDate}
                   onChange={handleTextFieldChange("orderDate")}
                   InputLabelProps={{ shrink: true }}
+                  inputProps={{
+                    max: new Date().toISOString().split("T")[0],
+                  }}
                 />
               </div>
 

@@ -42,6 +42,7 @@ const PaymentDetailsModal = ({
 }: PaymentDetailsModalProps) => {
   const dispatch = useAppDispatch();
   const { data, loading } = useAppSelector((state) => state.paymentDetails);
+  const totalAmountValue = Number(data?.summary?.total_amount ?? 0);
 
   useEffect(() => {
     if (open && invoiceId) {
@@ -99,7 +100,7 @@ const PaymentDetailsModal = ({
           <Box display="flex" flexDirection="column" gap={2} mt={2}>
             {/* Summary Section */}
             <Paper className="p-4 bg-blue-50">
-              <Box display="flex" gap={4}>
+              <Box display="flex" flexWrap="wrap" gap={4}>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
                     Total Payments
@@ -110,12 +111,30 @@ const PaymentDetailsModal = ({
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">
+                    Total Amount
+                  </Typography>
+                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    {formatCurrency(data.summary.total_amount)}
+                  </Typography>
+                </Box>
+                <Box>
+                  <Typography variant="caption" color="text.secondary">
                     Total Amount Paid
                   </Typography>
                   <Typography variant="h6" sx={{ color: "success.main", fontWeight: 600 }}>
                     {formatCurrency(data.summary.total_paid)}
                   </Typography>
                 </Box>
+                {totalAmountValue > 0 && (
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">
+                      Balance Amount
+                    </Typography>
+                    <Typography variant="h6" sx={{ color: "error.main", fontWeight: 600 }}>
+                      {formatCurrency(data.summary.balance_amount)}
+                    </Typography>
+                  </Box>
+                )}
               </Box>
             </Paper>
 

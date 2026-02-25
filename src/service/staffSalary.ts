@@ -1,5 +1,11 @@
 import axios from "axios";
-import type { StaffSalary, StaffSalaryFormData, StaffSalaryApiResponse, GetStaffSalaryListParams } from "../type/staffSalary";
+import type {
+  StaffSalary,
+  StaffSalaryFormData,
+  StaffSalaryApiResponse,
+  GetStaffSalaryListParams,
+  StaffSalaryMonthSummary,
+} from "../type/staffSalary";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -11,6 +17,21 @@ export const getStaffSalaryListApi = async (params: GetStaffSalaryListParams): P
     },
     params,
   });
+  return response.data;
+};
+
+export const getStaffSalaryMonthSummaryApi = async (
+  staffId: string
+): Promise<StaffSalaryApiResponse<StaffSalaryMonthSummary>> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(
+    `${BASE_URL}/staff-salary/${staffId}/month-summary`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
   return response.data;
 };
 

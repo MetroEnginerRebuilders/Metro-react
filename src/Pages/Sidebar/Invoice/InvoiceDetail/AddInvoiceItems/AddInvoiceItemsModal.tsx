@@ -151,6 +151,8 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
               company_id: "",
               model_id: "",
               spare_id: "",
+              bank_account_id: "",
+              quantity: "1",
             }
           : r
       )
@@ -313,12 +315,8 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
           return;
         }
       }
-      // COMMISSION validation: remarks, bank_account_id, and unit_price are mandatory
+      // COMMISSION validation: bank_account_id and unit_price are mandatory
       else if (isCommission) {
-        if (!row.remarks || row.remarks.trim() === "") {
-          toast.error(`Please enter remarks for row ${i + 1} (COMMISSION)`);
-          return;
-        }
         if (!row.bank_account_id) {
           toast.error(`Please select bank account for row ${i + 1} (COMMISSION)`);
           return;
@@ -331,17 +329,29 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     }
 
     // Transform data to API payload format
-    const items: AddInvoiceItemPayload[] = addItemsRows.map((row) => ({
-      item_type_id: row.item_type_id,
-      type_of_work: row.type_of_work || undefined,
-      company_id: row.company_id || undefined,
-      model_id: row.model_id || undefined,
-      spare_id: row.spare_id || undefined,
-      remarks: row.remarks || undefined,
-      quantity: parseFloat(row.quantity),
-      unit_price: parseFloat(row.unit_price),
-      bank_account_id: row.bank_account_id || undefined,
-    }));
+    const items: AddInvoiceItemPayload[] = addItemsRows.map((row) => {
+      const selectedItemType = itemTypes.find(
+        (type) => type.item_type_id === row.item_type_id
+      );
+      const itemTypeCode = selectedItemType?.item_type_code;
+      const isWork = itemTypeCode === "WORK";
+      const isSpare = itemTypeCode === "SPARE";
+      const isDiscount = itemTypeCode === "DISCOUNT";
+      const isCommission = itemTypeCode === "COMMISSION";
+
+      return {
+        item_type_id: row.item_type_id,
+        type_of_work: isWork ? row.type_of_work || undefined : undefined,
+        company_id: isSpare ? row.company_id || undefined : undefined,
+        model_id: isSpare ? row.model_id || undefined : undefined,
+        spare_id: isSpare ? row.spare_id || undefined : undefined,
+        remarks: row.remarks || undefined,
+        quantity:
+          isDiscount || isCommission ? 1 : parseFloat(row.quantity || "1"),
+        unit_price: parseFloat(row.unit_price),
+        bank_account_id: isCommission ? row.bank_account_id || undefined : undefined,
+      };
+    });
 
     try {
       const response = await addInvoiceItemsApi(invoiceId, { items });
@@ -389,6 +399,37 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     onClose();
   };
 
+  const showTypeOfWorkColumn = addItemsRows.some((row) => {
+    const itemTypeCode = itemTypes.find(
+      (type) => type.item_type_id === row.item_type_id
+    )?.item_type_code;
+    return !itemTypeCode || itemTypeCode === "WORK";
+  });
+
+  const showBankAccountColumn = addItemsRows.some((row) => {
+    const itemTypeCode = itemTypes.find(
+      (type) => type.item_type_id === row.item_type_id
+    )?.item_type_code;
+    return !itemTypeCode || itemTypeCode === "COMMISSION";
+  });
+
+  const showCompanyColumn = addItemsRows.some((row) => {
+    const itemTypeCode = itemTypes.find(
+      (type) => type.item_type_id === row.item_type_id
+    )?.item_type_code;
+    return !itemTypeCode || itemTypeCode === "SPARE";
+  });
+
+  const showModelColumn = showCompanyColumn;
+  const showSpareColumn = showCompanyColumn;
+
+  const showQuantityColumn = addItemsRows.some((row) => {
+    const itemTypeCode = itemTypes.find(
+      (type) => type.item_type_id === row.item_type_id
+    )?.item_type_code;
+    return !itemTypeCode || itemTypeCode === "WORK" || itemTypeCode === "SPARE";
+  });
+
   return (
     <Dialog open={open} maxWidth="xl" fullWidth>
       <DialogTitle>
@@ -417,13 +458,25 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>
                   Item Type <span style={{ color: "red" }}>*</span>
                 </TableCell>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Type of Work</TableCell>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Bank Account</TableCell>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Company</TableCell>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Model</TableCell>
-                <TableCell style={{ fontWeight: "bold", flex: 1 }}>Spare</TableCell>
+                {showTypeOfWorkColumn && (
+                  <TableCell style={{ fontWeight: "bold", flex: 1 }}>Type of Work</TableCell>
+                )}
+                {showBankAccountColumn && (
+                  <TableCell style={{ fontWeight: "bold", flex: 1 }}>Bank Account</TableCell>
+                )}
+                {showCompanyColumn && (
+                  <TableCell style={{ fontWeight: "bold", flex: 1 }}>Company</TableCell>
+                )}
+                {showModelColumn && (
+                  <TableCell style={{ fontWeight: "bold", flex: 1 }}>Model</TableCell>
+                )}
+                {showSpareColumn && (
+                  <TableCell style={{ fontWeight: "bold", flex: 1 }}>Spare</TableCell>
+                )}
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>Remarks</TableCell>
-                <TableCell style={{ fontWeight: "bold", width: "100px" }}>Quantity</TableCell>
+                {showQuantityColumn && (
+                  <TableCell style={{ fontWeight: "bold", width: "100px" }}>Quantity</TableCell>
+                )}
                 <TableCell style={{ fontWeight: "bold", width: "100px" }}>Unit Price</TableCell>
                 <TableCell align="center" style={{ fontWeight: "bold", width: "80px" }}>
                   Actions
@@ -438,8 +491,16 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                 const itemTypeCode = selectedItemType?.item_type_code;
                 const isWork = itemTypeCode === "WORK";
                 const isSpare = itemTypeCode === "SPARE";
-                const isDiscount = itemTypeCode === "DISCOUNT";
+                // const isDiscount = itemTypeCode === "DISCOUNT";
                 const isCommission = itemTypeCode === "COMMISSION";
+                const isTypeNotSelected = !itemTypeCode;
+
+                const showTypeOfWork = isTypeNotSelected || isWork;
+                const showBankAccount = isTypeNotSelected || isCommission;
+                const showCompany = isTypeNotSelected || isSpare;
+                const showModel = isTypeNotSelected || isSpare;
+                const showSpare = isTypeNotSelected || isSpare;
+                const showQuantity = isTypeNotSelected || isWork || isSpare;
 
                 return (
                 <TableRow key={row.tempId} sx={{ height: "40px", borderBottom: "none" }}>
@@ -467,153 +528,171 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       noOptionsText="No types available"
                     />
                   </TableCell>
-                  <TableCell style={{ flex: 1, padding: "4px" }}>
-                    <TextField
-                      size="small"
-                      value={row.type_of_work}
-                      onChange={(e) => handleTypeOfWorkChange(row.tempId, e.target.value)}
-                      placeholder={isWork ? "Type (Required)" : "Type"}
-                      fullWidth
-                      variant="outlined"
-                      disabled={isSpare || isDiscount || isCommission}
-                      error={isWork && !row.type_of_work}
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          height: "40px",
-                        },
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          height: "24px",
-                        },
-                      }}
-                    />
-                  </TableCell>
-                  <TableCell style={{ flex: 1, padding: "4px" }}>
-                    <Autocomplete
-                      size="small"
-                      options={bankAccounts}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : (option.account_name || option.account_number || "")
-                      }
-                      value={
-                        bankAccounts.find((acc) => acc.bank_account_id === row.bank_account_id) ||
-                        null
-                      }
-                      onChange={(_, newValue) => {
-                        handleBankAccountChange(row.tempId, newValue?.bank_account_id || "");
-                      }}
-                      disabled={loading || !isCommission}
-                      isOptionEqualToValue={(option, value) =>
-                        option.bank_account_id === value?.bank_account_id
-                      }
-                      renderInput={(params) => (
-                        <TextField 
-                          {...params} 
-                          placeholder={isCommission ? "Select (Required)" : "Select"}
-                          error={isCommission && !row.bank_account_id}
+                  {showTypeOfWorkColumn && (
+                    <TableCell style={{ flex: 1, padding: "4px" }}>
+                      {showTypeOfWork ? (
+                        <TextField
+                          size="small"
+                          value={row.type_of_work}
+                          onChange={(e) => handleTypeOfWorkChange(row.tempId, e.target.value)}
+                          placeholder={isWork ? "Type (Required)" : "Type"}
+                          fullWidth
+                          variant="outlined"
+                          error={isWork && !row.type_of_work}
+                          sx={{
+                            "& .MuiOutlinedInput-root": {
+                              height: "40px",
+                            },
+                            "& .MuiOutlinedInput-input": {
+                              padding: "8px 12px",
+                              height: "24px",
+                            },
+                          }}
                         />
-                      )}
-                      noOptionsText="No bank accounts available"
-                    />
-                  </TableCell>
-                  <TableCell style={{ flex: 1, padding: "4px" }}>
-                    <Autocomplete
-                      size="small"
-                      options={companies}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : option.company_name
-                      }
-                      value={
-                        companies.find((company) => company.company_id === row.company_id) ||
-                        null
-                      }
-                      onChange={(_, newValue) => {
-                        handleCompanyChange(
-                          row.tempId,
-                          newValue?.company_id || ""
-                        );
-                      }}
-                      disabled={loading || isWork || isDiscount || isCommission}
-                      isOptionEqualToValue={(option, value) =>
-                        option.company_id === value?.company_id
-                      }
-                      renderInput={(params) => (
-                        <TextField 
-                          {...params} 
-                          placeholder={isSpare ? "Select (Required)" : "Select"}
-                          error={isSpare && !row.company_id}
-                        />
-                      )}
-                      noOptionsText="No companies available"
-                    />
-                  </TableCell>
-                  <TableCell style={{ flex: 1, padding: "4px" }}>
-                    <Autocomplete
-                      size="small"
-                      options={modelsByIndex[row.tempId] || []}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : option.model_name
-                      }
-                      value={
-                        (modelsByIndex[row.tempId] || []).find(
-                          (model) => model.model_id === row.model_id
-                        ) || null
-                      }
-                      onChange={(_, newValue) => {
-                        handleModelChange(row.tempId, newValue?.model_id || "");
-                      }}
-                      disabled={!row.company_id || loading || isWork || isDiscount || isCommission}
-                      isOptionEqualToValue={(option, value) =>
-                        option.model_id === value?.model_id
-                      }
-                      renderInput={(params) => (
-                        <TextField 
-                          {...params} 
-                          placeholder={isSpare ? "Select (Required)" : "Select"}
-                          error={isSpare && !row.model_id}
-                        />
-                      )}
-                      noOptionsText="No models available"
-                    />
-                  </TableCell>
-                  <TableCell style={{ flex: 1, padding: "4px" }}>
-                    <Autocomplete
-                      size="small"
-                      options={sparesByIndex[row.tempId] || []}
-                      getOptionLabel={(option) =>
-                        typeof option === "string" ? option : option.spare_name
-                      }
-                      value={
-                        (sparesByIndex[row.tempId] || []).find(
-                          (spare) => spare.spare_id === row.spare_id
-                        ) || null
-                      }
-                      onChange={(_, newValue) => {
-                        handleSpareChange(row.tempId, newValue?.spare_id || "");
-                      }}
-                      disabled={!row.model_id || loading || isWork || isDiscount || isCommission}
-                      isOptionEqualToValue={(option, value) =>
-                        option.spare_id === value?.spare_id
-                      }
-                      renderInput={(params) => (
-                        <TextField 
-                          {...params} 
-                          placeholder={isSpare ? "Select (Required)" : "Select"}
-                          error={isSpare && !row.spare_id}
-                        />
-                      )}
-                      noOptionsText="No spares available"
-                    />
-                  </TableCell>
+                      ) : null}
+                    </TableCell>
+                  )}
+                  {showBankAccountColumn && (
+                    <TableCell style={{ flex: 1, padding: "4px" }}>
+                      {showBankAccount ? (
+                      <Autocomplete
+                        size="small"
+                        options={bankAccounts}
+                        getOptionLabel={(option) =>
+                          typeof option === "string" ? option : (option.account_name || option.account_number || "")
+                        }
+                        value={
+                          bankAccounts.find((acc) => acc.bank_account_id === row.bank_account_id) ||
+                          null
+                        }
+                        onChange={(_, newValue) => {
+                          handleBankAccountChange(row.tempId, newValue?.bank_account_id || "");
+                        }}
+                        disabled={loading}
+                        isOptionEqualToValue={(option, value) =>
+                          option.bank_account_id === value?.bank_account_id
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={isCommission ? "Select (Required)" : "Select"}
+                            error={isCommission && !row.bank_account_id}
+                          />
+                        )}
+                        noOptionsText="No bank accounts available"
+                      />
+                      ) : null}
+                    </TableCell>
+                  )}
+                  {showCompanyColumn && (
+                    <TableCell style={{ flex: 1, padding: "4px" }}>
+                      {showCompany ? (
+                      <Autocomplete
+                        size="small"
+                        options={companies}
+                        getOptionLabel={(option) =>
+                          typeof option === "string" ? option : option.company_name
+                        }
+                        value={
+                          companies.find((company) => company.company_id === row.company_id) ||
+                          null
+                        }
+                        onChange={(_, newValue) => {
+                          handleCompanyChange(
+                            row.tempId,
+                            newValue?.company_id || ""
+                          );
+                        }}
+                        disabled={loading}
+                        isOptionEqualToValue={(option, value) =>
+                          option.company_id === value?.company_id
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={isSpare ? "Select (Required)" : "Select"}
+                            error={isSpare && !row.company_id}
+                          />
+                        )}
+                        noOptionsText="No companies available"
+                      />
+                      ) : null}
+                    </TableCell>
+                  )}
+                  {showModelColumn && (
+                    <TableCell style={{ flex: 1, padding: "4px" }}>
+                      {showModel ? (
+                      <Autocomplete
+                        size="small"
+                        options={modelsByIndex[row.tempId] || []}
+                        getOptionLabel={(option) =>
+                          typeof option === "string" ? option : option.model_name
+                        }
+                        value={
+                          (modelsByIndex[row.tempId] || []).find(
+                            (model) => model.model_id === row.model_id
+                          ) || null
+                        }
+                        onChange={(_, newValue) => {
+                          handleModelChange(row.tempId, newValue?.model_id || "");
+                        }}
+                        disabled={!row.company_id || loading}
+                        isOptionEqualToValue={(option, value) =>
+                          option.model_id === value?.model_id
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={isSpare ? "Select (Required)" : "Select"}
+                            error={isSpare && !row.model_id}
+                          />
+                        )}
+                        noOptionsText="No models available"
+                      />
+                      ) : null}
+                    </TableCell>
+                  )}
+                  {showSpareColumn && (
+                    <TableCell style={{ flex: 1, padding: "4px" }}>
+                      {showSpare ? (
+                      <Autocomplete
+                        size="small"
+                        options={sparesByIndex[row.tempId] || []}
+                        getOptionLabel={(option) =>
+                          typeof option === "string" ? option : option.spare_name
+                        }
+                        value={
+                          (sparesByIndex[row.tempId] || []).find(
+                            (spare) => spare.spare_id === row.spare_id
+                          ) || null
+                        }
+                        onChange={(_, newValue) => {
+                          handleSpareChange(row.tempId, newValue?.spare_id || "");
+                        }}
+                        disabled={!row.model_id || loading}
+                        isOptionEqualToValue={(option, value) =>
+                          option.spare_id === value?.spare_id
+                        }
+                        renderInput={(params) => (
+                          <TextField
+                            {...params}
+                            placeholder={isSpare ? "Select (Required)" : "Select"}
+                            error={isSpare && !row.spare_id}
+                          />
+                        )}
+                        noOptionsText="No spares available"
+                      />
+                      ) : null}
+                    </TableCell>
+                  )}
                   <TableCell style={{ flex: 1, padding: "4px" }}>
                     <TextField
                       size="small"
                       value={row.remarks}
                       onChange={(e) => handleRemarksChange(row.tempId, e.target.value)}
-                      placeholder={isCommission ? "Remarks (Required)" : "Remarks"}
+                      placeholder="Remarks"
                       fullWidth
                       variant="outlined"
-                      error={isCommission && !row.remarks}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           height: "40px",
@@ -625,28 +704,31 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                       }}
                     />
                   </TableCell>
-                  <TableCell style={{ width: "100px", padding: "4px" }}>
-                    <TextField
-                      size="small"
-                      type="text"
-                      value={row.quantity}
-                      onChange={(e) => handleQuantityChange(row.tempId, e.target.value)}
-                      placeholder={(isWork || isSpare) ? "Req'd" : "Qty"}
-                      inputProps={{ min: 1, step: "1" }}
-                      disabled={isDiscount || isCommission}
-                      error={(isWork || isSpare) && !row.quantity}
-                      variant="outlined"
-                      sx={{
-                        "& .MuiOutlinedInput-root": {
-                          height: "40px",
-                        },
-                        "& .MuiOutlinedInput-input": {
-                          padding: "8px 12px",
-                          height: "24px",
-                        },
-                      }}
-                    />
-                  </TableCell>
+                  {showQuantityColumn && (
+                    <TableCell style={{ width: "100px", padding: "4px" }}>
+                      {showQuantity ? (
+                      <TextField
+                        size="small"
+                        type="text"
+                        value={row.quantity}
+                        onChange={(e) => handleQuantityChange(row.tempId, e.target.value)}
+                        placeholder={isWork || isSpare ? "Req'd" : "Qty"}
+                        inputProps={{ min: 1, step: "1" }}
+                        error={showQuantity && !row.quantity}
+                        variant="outlined"
+                        sx={{
+                          "& .MuiOutlinedInput-root": {
+                            height: "40px",
+                          },
+                          "& .MuiOutlinedInput-input": {
+                            padding: "8px 12px",
+                            height: "24px",
+                          },
+                        }}
+                      />
+                      ) : null}
+                    </TableCell>
+                  )}
                   <TableCell style={{ width: "100px", padding: "4px" }}>
                     <TextField
                       size="small"

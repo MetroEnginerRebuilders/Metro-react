@@ -31,6 +31,8 @@ import CreateStock from './Pages/Sidebar/Stock/CreateStock/CreateStock'
 import JobList from './Pages/Sidebar/Jobs/JobList/JobList'
 import InvoiceDetail from './Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail'
 import CreateJobPage from './Pages/Sidebar/Jobs/CreateJobPage/CreateJobPage'
+import MonthlyIncomeDetails from './Pages/Sidebar/Dashboard/MonthlyIncomeDetails'
+import MonthlyExpenseDetails from './Pages/Sidebar/Dashboard/MonthlyExpenseDetails'
 
 function App() {
 
@@ -44,6 +46,8 @@ function App() {
         <Route element={<ProtectedRoute />}>
           {/* Sidebar routes  */}
           <Route path="/" element={<Dashboard />} />
+          <Route path="/dashboard/monthly-income" element={<MonthlyIncomeDetails />} />
+          <Route path="/dashboard/monthly-expense" element={<MonthlyExpenseDetails />} />
           <Route path="/search" element={<Search />} />
           <Route path="/master" element={<MasterData/>} />
           <Route path="/monthly-reports" element={<MonthlyReports />} />

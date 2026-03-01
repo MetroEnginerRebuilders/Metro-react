@@ -40,6 +40,7 @@ import type {
   BankAccount,
 } from "../../../../../type/invoice";
 import { useState, useEffect } from "react";
+import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
 
 interface AddInvoiceItemsModalProps {
   open: boolean;
@@ -453,8 +454,8 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
       <DialogContent>
         <TableContainer>
           <Table size="small">
-            <TableHead>
-              <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+            <TableHead sx={commonTableHeadSx}>
+              <TableRow>
                 <TableCell style={{ fontWeight: "bold", flex: 1 }}>
                   Item Type <span style={{ color: "red" }}>*</span>
                 </TableCell>

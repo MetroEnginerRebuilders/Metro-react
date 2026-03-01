@@ -32,6 +32,7 @@ import { getBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
 import CommonPagination from "../../../Components/CommonPagination";
 import EditStaffSalary from "./EditStaffSalary";
+import { commonTableHeadSx } from "../../../utils/tableHeaderStyle";
 import { formatDate, formatCurrency } from "../../../utils/formatters";
 
 function StaffSalary() {
@@ -205,7 +206,7 @@ function StaffSalary() {
       <div className="flex-1 px-3 overflow-auto">
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="staff salary table">
-            <TableHead>
+            <TableHead sx={commonTableHeadSx}>
               <TableRow>
                 <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }}>STAFF NAME</TableCell>

@@ -26,6 +26,7 @@ import { getBankAccountListApi, deleteBankAccountApi } from "../../../../service
 import CreateBankAccount from "../CreateBankAccount/CreateBankAccount";
 import CommonPagination from "../../../../Components/CommonPagination";
 import EditBankAccount from "../EditBankAccount/EditBankAccount";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatDate, formatCurrency } from "../../../../utils/formatters";
 
 const BankAccount = () => {
@@ -165,7 +166,7 @@ const BankAccount = () => {
             <div className="flex-1 px-3 overflow-auto">
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-                        <TableHead>
+                        <TableHead sx={commonTableHeadSx}>
                             <TableRow>
                                 <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                                 <TableCell style={{ fontWeight: 'bold' }}>ACCOUNT NAME</TableCell>

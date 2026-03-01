@@ -21,6 +21,7 @@ import Breadcrumb from "../../../../Components/Breadcrumb";
 import CommonPagination from "../../../../Components/CommonPagination";
 import { deleteJobApi, getJobListApi } from "../../../../service/job";
 import type { Job } from "../../../../type/job";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../utils/formatters";
 import CreateJob from "../CreateJob/CreateJob";
 import EditJob from "../EditJob/EditJob";
@@ -179,7 +180,7 @@ const JobList = () => {
             <div className="flex-1 px-3 overflow-auto">
                 <TableContainer component={Paper}>
                     <Table sx={{ minWidth: 650 }} size="small" aria-label="job list">
-                        <TableHead>
+                        <TableHead sx={commonTableHeadSx}>
                             <TableRow>
                                 <TableCell style={{ fontWeight: "bold" }}>SL NO</TableCell>
                                 <TableCell style={{ fontWeight: "bold" }}>JOB ID</TableCell>

@@ -23,6 +23,7 @@ import CommonPagination from "../../../../Components/CommonPagination";
 import { getStockListApi } from "../../../../service/stock";
 import type { StockTransactionItem, CurrentStockItem } from "../../../../type/stock";
 import { toast } from "react-toastify";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -168,7 +169,7 @@ function Stock() {
         <div className="flex-1 px-3 overflow-auto">
           <TableContainer component={Paper}>
             <Table sx={{ minWidth: 650 }} size="small">
-              <TableHead>
+              <TableHead sx={commonTableHeadSx}>
                 <TableRow>
                   <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                   <TableCell style={{ fontWeight: 'bold' }}>COMPANY</TableCell>

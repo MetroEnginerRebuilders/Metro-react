@@ -27,6 +27,7 @@ import {
   clearPaymentDetails,
 } from "./PaymentDetails.slice";
 import { getPaymentDetailsApi } from "../../../../../service/invoice";
+import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../../utils/formatters";
 
 interface PaymentDetailsModalProps {
@@ -142,8 +143,8 @@ const PaymentDetailsModal = ({
             {data.payments.length > 0 ? (
               <TableContainer component={Paper}>
                 <Table size="small">
-                  <TableHead>
-                    <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                  <TableHead sx={commonTableHeadSx}>
+                    <TableRow>
                       <TableCell style={{ fontWeight: "bold" }}>SL NO</TableCell>
                       <TableCell style={{ fontWeight: "bold" }}>Payment Date</TableCell>
                       <TableCell style={{ fontWeight: "bold" }}>Amount Paid</TableCell>

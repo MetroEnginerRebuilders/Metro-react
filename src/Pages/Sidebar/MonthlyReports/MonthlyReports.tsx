@@ -32,6 +32,7 @@ import {
   setSelectedYear,
 } from "./MonthlyReports.slice";
 import { formatCurrency, formatDate } from "../../../utils/formatters";
+import { commonTableHeadSx } from "../../../utils/tableHeaderStyle";
 import type { MonthlyReportDayItem } from "../../../type/monthlyReport";
 
 const MONTHS = [
@@ -291,7 +292,7 @@ function MonthlyReports() {
               },
             }}
           >
-            <TableHead>
+            <TableHead sx={commonTableHeadSx}>
               <TableRow>
                 <TableCell style={{ fontWeight: "bold" }}>Date</TableCell>
                 <TableCell style={{ fontWeight: "bold" }}>Food</TableCell>

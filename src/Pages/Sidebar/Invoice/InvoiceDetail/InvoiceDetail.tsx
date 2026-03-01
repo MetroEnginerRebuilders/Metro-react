@@ -24,6 +24,7 @@ import AddInvoiceItemsModal from "./AddInvoiceItems/AddInvoiceItemsModal";
 import PaymentModal from "./Payment/PaymentModal";
 import PaymentDetailsModal from "./PaymentDetails/PaymentDetailsModal";
 import { getInvoiceDetailsApi, deleteInvoiceItemApi, downloadInvoicePdfApi, getPaymentDetailsApi } from "../../../../service/invoice";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate, formatInvoiceItemRemarks } from "../../../../utils/formatters";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import {
@@ -383,7 +384,7 @@ const InvoiceDetailPage = () => {
 
           <TableContainer>
             <Table size="small">
-              <TableHead>
+              <TableHead sx={commonTableHeadSx}>
                 <TableRow>
                   <TableCell style={{ fontWeight: "bold" }}>SL NO</TableCell>
                   <TableCell style={{ fontWeight: "bold" }}>ITEMS REMARKS</TableCell>

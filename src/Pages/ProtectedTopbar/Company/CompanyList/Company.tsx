@@ -26,6 +26,7 @@ import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getCompanyListApi, deleteCompanyApi } from "../../../../service/company";
 import CreateCompany from "../CreateCompany/CreateCompany";
 import EditCompany from "../EditCompany/EditCompany";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 
 const Company = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -173,7 +174,7 @@ const Company = () => {
       <div className="flex-1 px-3 overflow-auto">
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-            <TableHead>
+            <TableHead sx={commonTableHeadSx}>
               <TableRow>
                 <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }}>COMPANY NAME</TableCell>

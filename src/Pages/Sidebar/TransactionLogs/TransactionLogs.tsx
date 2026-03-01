@@ -1,5 +1,7 @@
 import {
   Box,
+  Button,
+  CircularProgress,
   Paper,
   Table,
   TableBody,
@@ -10,17 +12,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-toastify";
+import { getDailyTransactionApi } from "../../../service/transactionLogs";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
 import { commonTableHeadSx } from "../../../utils/tableHeaderStyle";
+import { clearTransactionLogs, setTransactionLogs } from "./TransactionLogs.slice";
 import { formatCurrency } from "../../../utils/formatters";
-
-interface DailyTransactionItem {
-  id: number;
-  date: string;
-  perticulars: string;
-  income: number;
-  expense: number;
-}
 
 const formatToInputDate = (date: Date): string => {
   const year = date.getFullYear();
@@ -29,23 +27,91 @@ const formatToInputDate = (date: Date): string => {
   return `${year}-${month}-${day}`;
 };
 
-const DUMMY_TRANSACTIONS: DailyTransactionItem[] = [
-  { id: 1, date: "2026-03-01", perticulars: "Lathe Work", income: 2500, expense: 0 },
-  { id: 2, date: "2026-03-01", perticulars: "Petrol", income: 0, expense: 800 },
-  { id: 3, date: "2026-03-01", perticulars: "Job Payment", income: 3200, expense: 0 },
-  { id: 4, date: "2026-02-28", perticulars: "Office Supplies", income: 0, expense: 450 },
-  { id: 5, date: "2026-02-28", perticulars: "Customer Payment", income: 1800, expense: 0 },
-];
+const getTransactionKind = (description: string): "income" | "expense" | "unknown" => {
+  const normalizedDescription = description.trim().toLowerCase();
+  const prefix = normalizedDescription.split("-")[0]?.trim();
+
+  if (["income", "invoice", "job"].includes(prefix)) {
+    return "income";
+  }
+
+  if (["expense", "stock", "salary", "commission"].includes(prefix)) {
+    return "expense";
+  }
+
+  if (normalizedDescription.includes("commission")) {
+    return "expense";
+  }
+
+  return "unknown";
+};
+
+const formatParticulars = (description: string | null | undefined): string => {
+  if (!description) {
+    return "-";
+  }
+
+  const trimmedDescription = description.trim();
+  if (!trimmedDescription) {
+    return "-";
+  }
+
+  const firstCharacter = trimmedDescription.charAt(0);
+  if (firstCharacter === firstCharacter.toLowerCase() && firstCharacter !== firstCharacter.toUpperCase()) {
+    return firstCharacter.toUpperCase() + trimmedDescription.slice(1);
+  }
+
+  return trimmedDescription;
+};
 
 function TransactionLogs() {
+  const dispatch = useAppDispatch();
+  const transactions = useAppSelector((state) => state.transactionLogs.list);
+  const [loading, setLoading] = useState(false);
   const today = useMemo(() => new Date(), []);
   const todayDate = useMemo(() => formatToInputDate(today), [today]);
   const [selectedDate, setSelectedDate] = useState(todayDate);
+  const [appliedDate, setAppliedDate] = useState(todayDate);
 
-  const filteredTransactions = useMemo(
-    () => DUMMY_TRANSACTIONS.filter((item) => item.date === selectedDate),
-    [selectedDate]
-  );
+  const { totalIncome, totalExpense } = useMemo(() => {
+    return transactions.reduce(
+      (totals, item) => {
+        const transactionKind = getTransactionKind(item.description || "");
+        if (transactionKind === "income") {
+          totals.totalIncome += Number(item.amount) || 0;
+        }
+        if (transactionKind === "expense") {
+          totals.totalExpense += Number(item.amount) || 0;
+        }
+        return totals;
+      },
+      { totalIncome: 0, totalExpense: 0 }
+    );
+  }, [transactions]);
+
+  useEffect(() => {
+    fetchDailyTransactions(appliedDate);
+  }, [appliedDate]);
+
+  const fetchDailyTransactions = async (date: string) => {
+    setLoading(true);
+    try {
+      const response = await getDailyTransactionApi(date);
+      if (response.success && response.data) {
+        dispatch(setTransactionLogs(response.data));
+      } else {
+        dispatch(clearTransactionLogs());
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to fetch daily transactions", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      dispatch(clearTransactionLogs());
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box p={2}>
@@ -53,7 +119,7 @@ function TransactionLogs() {
         Daily Transaction Logs
       </Typography>
 
-      <Box mb={2}>
+      <Box mb={2} display="flex" gap={2} alignItems="center" flexWrap="wrap">
         <TextField
           label="Date"
           type="date"
@@ -63,6 +129,13 @@ function TransactionLogs() {
           inputProps={{ max: todayDate }}
           size="small"
         />
+        <Button
+          variant="contained"
+          onClick={() => setAppliedDate(selectedDate)}
+          disabled={loading}
+        >
+          Apply
+        </Button>
       </Box>
 
       <TableContainer component={Paper}>
@@ -84,25 +157,47 @@ function TransactionLogs() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {filteredTransactions.length === 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={4} align="center">
+                  <CircularProgress size={28} />
+                </TableCell>
+              </TableRow>
+            ) : transactions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} align="center">
                   No data found
                 </TableCell>
               </TableRow>
             ) : (
-              filteredTransactions.map((item, index) => (
-                <TableRow key={item.id} hover>
+              transactions.map((item, index) => {
+                const transactionKind = getTransactionKind(item.description || "");
+
+                return (
+                <TableRow key={item.transaction_id} hover>
                   <TableCell>{index + 1}</TableCell>
-                  <TableCell>{item.perticulars}</TableCell>
-                  <TableCell>{item.income ? formatCurrency(item.income) : "-"}</TableCell>
-                  <TableCell>{item.expense ? formatCurrency(item.expense) : "-"}</TableCell>
+                  <TableCell>{formatParticulars(item.description)}</TableCell>
+                  <TableCell>
+                    {transactionKind === "income" ? formatCurrency(item.amount) : "-"}
+                  </TableCell>
+                  <TableCell>
+                    {transactionKind === "expense" ? formatCurrency(item.amount) : "-"}
+                  </TableCell>
                 </TableRow>
-              ))
+              );})
             )}
           </TableBody>
         </Table>
       </TableContainer>
+
+      <Box mt={2} display="flex" gap={3} flexWrap="wrap">
+        <Typography variant="body1" fontWeight={600}>
+          Total Income: {formatCurrency(totalIncome)}
+        </Typography>
+        <Typography variant="body1" fontWeight={600}>
+          Total Expense: {formatCurrency(totalExpense)}
+        </Typography>
+      </Box>
     </Box>
   );
 }

@@ -21,6 +21,7 @@ import type { Invoice as InvoiceType } from "../../../type/invoice";
 import Breadcrumb from "../../../Components/Breadcrumb";
 import CommonPagination from "../../../Components/CommonPagination";
 import { getInvoiceListApi } from "../../../service/invoice";
+import { commonTableHeadSx } from "../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../utils/formatters";
 
 const Invoice = () => {
@@ -107,7 +108,7 @@ const Invoice = () => {
       <div className="flex-1 px-3 overflow-auto">
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="invoice list">
-            <TableHead>
+            <TableHead sx={commonTableHeadSx}>
               <TableRow>
                 <TableCell style={{ fontWeight: "bold" }}>SL NO</TableCell>
                 <TableCell style={{ fontWeight: "bold" }}>INVOICE NO</TableCell>

@@ -26,6 +26,7 @@ import CommonPagination from "../../../../Components/CommonPagination";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getIncomeListApi, deleteIncomeApi } from "../../../../service/income";
 import EditIncome from "../EditIncome/EditIncome";
+import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../utils/formatters";
 
 const Income = () => {
@@ -188,7 +189,7 @@ const Income = () => {
       <div className="flex-1 px-3 overflow-auto">
         <TableContainer component={Paper}>
           <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
-            <TableHead>
+            <TableHead sx={commonTableHeadSx}>
               <TableRow>
                 <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                 <TableCell style={{ fontWeight: 'bold' }}>INCOME CATEGORY</TableCell>

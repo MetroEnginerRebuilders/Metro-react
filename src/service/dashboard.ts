@@ -1,5 +1,9 @@
 import axios from "axios";
 import type {
+  DashboardExpenseDateRangeApiResponse,
+  DashboardExpenseDateRangePayload,
+  DashboardFinanceDateRangeApiResponse,
+  DashboardFinanceDateRangePayload,
   DashboardIncomeExpenseApiResponse,
   DashboardIncomeExpensePayload,
   DashboardYearlyIncomeExpenseApiResponse,
@@ -30,6 +34,31 @@ export const getDashboardYearlyIncomeExpenseApi = async (
       Authorization: `Bearer ${token}`,
     },
     params: payload,
+  });
+  return response.data;
+};
+
+export const getDashboardFinanceDateRangeApi = async (
+  payload: DashboardFinanceDateRangePayload
+): Promise<DashboardFinanceDateRangeApiResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/finance/date-range`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: payload,
+  });
+  return response.data;
+};
+
+export const getDashboardExpenseDateRangeApi = async (
+  payload: DashboardExpenseDateRangePayload
+): Promise<DashboardExpenseDateRangeApiResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.post(`${BASE_URL}/expense/date-range`, payload, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
   });
   return response.data;
 };

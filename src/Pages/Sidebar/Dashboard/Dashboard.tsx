@@ -171,7 +171,7 @@ function Dashboard() {
               Dashboard
             </Typography>
             <Typography variant="body2" color="text.secondary" mt={0.5}>
-              Monthly finance overview and quick insights (hardcoded for now)
+              Monthly finance overview and quick insights
             </Typography>
           </Box>
           <CommonMonthSelect

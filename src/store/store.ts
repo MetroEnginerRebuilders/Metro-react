@@ -44,6 +44,8 @@ import invoiceDetail from "../Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail.
 import addInvoiceItems from "../Pages/Sidebar/Invoice/InvoiceDetail/AddInvoiceItems/AddInvoiceItems.slice.ts";
 import payment from "../Pages/Sidebar/Invoice/InvoiceDetail/Payment/Payment.slice.ts";
 import paymentDetails from "../Pages/Sidebar/Invoice/InvoiceDetail/PaymentDetails/PaymentDetails.slice.ts";
+import monthlyIncomeDetails from "../Pages/Sidebar/Dashboard/MonthlyIncomeDetails.slice.ts";
+import monthlyExpenseDetails from "../Pages/Sidebar/Dashboard/MonthlyExpenseDetails.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -92,6 +94,8 @@ export const store = configureStore({
    addInvoiceItems,
    payment,
    paymentDetails,
+   monthlyIncomeDetails,
+   monthlyExpenseDetails,
   },
 });
 

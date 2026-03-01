@@ -39,3 +39,70 @@ export interface DashboardYearlyIncomeExpenseApiResponse {
   message?: string;
   data?: DashboardYearlyIncomeExpenseData;
 }
+
+export interface DashboardFinanceDateRangePayload {
+  fromDate: string;
+  toDate: string;
+}
+
+export interface DashboardFinanceDateRangeItem {
+  transaction_id: string;
+  shop_id: string | null;
+  finance_types_id: string | null;
+  finance_categories_id: string | null;
+  reference_type:
+    | "finance"
+    | "customer"
+    | "invoice_payment"
+    | "job"
+    | "salary"
+    | "stock"
+    | null;
+  reference_id: string | null;
+  bank_account_id: string | null;
+  amount: number;
+  transaction_date: string;
+  description: string | null;
+  created_at: string;
+  finance_type_code: string;
+  finance_type_name: string;
+  finance_category_name: string | null;
+  account_name: string | null;
+  reference_name: string | null;
+}
+
+export interface DashboardFinanceDateRangeApiResponse {
+  success: boolean;
+  message?: string;
+  data?: DashboardFinanceDateRangeItem[];
+}
+
+export interface DashboardExpenseDateRangePayload {
+  fromDate: string;
+  toDate: string;
+}
+
+export interface DashboardExpenseDateRangeItem {
+  transaction_id: string;
+  shop_id: string | null;
+  finance_types_id: string | null;
+  finance_categories_id: string | null;
+  reference_type: string | null;
+  reference_id: string | null;
+  bank_account_id: string | null;
+  amount: number;
+  transaction_date: string;
+  description: string | null;
+  created_at: string;
+  finance_type_code: string;
+  finance_type_name: string;
+  finance_category_name: string | null;
+  account_name: string | null;
+  reference_name: string | null;
+}
+
+export interface DashboardExpenseDateRangeApiResponse {
+  success: boolean;
+  message?: string;
+  data?: DashboardExpenseDateRangeItem[];
+}

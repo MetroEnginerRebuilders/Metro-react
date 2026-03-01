@@ -1,4 +1,5 @@
 import {
+  Button,
   Box,
   CircularProgress,
   Paper,
@@ -8,18 +9,54 @@ import {
   TableContainer,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from "@mui/material";
 import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-toastify";
+import { useAppDispatch, useAppSelector } from "../../../store/hooks";
+import {
+  clearMonthlyExpenseDetails,
+  setMonthlyExpenseDetails,
+} from "./MonthlyExpenseDetails.slice";
 import Breadcrumb from "../../../Components/Breadcrumb";
-import { getExpenseListApi } from "../../../service/expense";
-import type { Expense } from "../../../type/expense";
+import { getDashboardExpenseDateRangeApi } from "../../../service/dashboard";
+import { commonTableHeadSx } from "../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../utils/formatters";
 
+const formatToApiDate = (date: Date): string => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
+
+const formatReferenceType = (referenceType: string | null): string => {
+  if (!referenceType) {
+    return "-";
+  }
+
+  return referenceType
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+};
+
 function MonthlyExpenseDetails() {
+  const dispatch = useAppDispatch();
   const [loading, setLoading] = useState(false);
-  const [expenseList, setExpenseList] = useState<Expense[]>([]);
+  const expenseList = useAppSelector((state) => state.monthlyExpenseDetails.list);
+
+  const today = useMemo(() => new Date(), []);
+  const defaultFromDate = useMemo(
+    () => formatToApiDate(new Date(today.getFullYear(), today.getMonth(), 1)),
+    [today]
+  );
+  const defaultToDate = useMemo(() => formatToApiDate(today), [today]);
+
+  const [fromDate, setFromDate] = useState(defaultFromDate);
+  const [toDate, setToDate] = useState(defaultToDate);
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },
@@ -28,44 +65,54 @@ function MonthlyExpenseDetails() {
   ];
 
   useEffect(() => {
-    fetchExpense();
+    fetchExpense(defaultFromDate, defaultToDate);
   }, []);
 
-  const fetchExpense = async () => {
+  const fetchExpense = async (selectedFromDate: string, selectedToDate: string) => {
     setLoading(true);
     try {
-      const response = await getExpenseListApi({
-        page: 1,
-        limit: 1000,
-        financeTypeCode: "EXPENSE",
+      const response = await getDashboardExpenseDateRangeApi({
+        fromDate: selectedFromDate,
+        toDate: selectedToDate,
       });
       if (response.success && response.data) {
-        setExpenseList(response.data);
+        const monthlyExpenseItems = response.data.filter(
+          (item) => item.finance_type_code === "EXPENSE"
+        );
+        dispatch(setMonthlyExpenseDetails(monthlyExpenseItems));
       } else {
-        setExpenseList([]);
+        dispatch(clearMonthlyExpenseDetails());
       }
     } catch (error: any) {
       toast.error(error?.response?.data?.message || "Failed to fetch expense details", {
         position: "top-center",
         autoClose: 3000,
       });
+      dispatch(clearMonthlyExpenseDetails());
     } finally {
       setLoading(false);
     }
   };
 
-  const now = new Date();
-  const currentMonth = now.getMonth();
-  const currentYear = now.getFullYear();
+  const handleApplyDateRange = () => {
+    if (!fromDate || !toDate) {
+      toast.error("Please select both from and to dates", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
 
-  const monthlyExpenseItems = useMemo(
-    () =>
-      expenseList.filter((item) => {
-        const date = new Date(item.transaction_date);
-        return date.getMonth() === currentMonth && date.getFullYear() === currentYear;
-      }),
-    [expenseList, currentMonth, currentYear]
-  );
+    if (fromDate > toDate) {
+      toast.error("From date should not be greater than to date", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    fetchExpense(fromDate, toDate);
+  };
 
   return (
     <Box>
@@ -75,6 +122,28 @@ function MonthlyExpenseDetails() {
           Monthly Expense Details
         </Typography>
 
+        <Box display="flex" flexWrap="wrap" gap={2} mb={2}>
+          <TextField
+            label="From Date"
+            type="date"
+            value={fromDate}
+            onChange={(e) => setFromDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            size="small"
+          />
+          <TextField
+            label="To Date"
+            type="date"
+            value={toDate}
+            onChange={(e) => setToDate(e.target.value)}
+            InputLabelProps={{ shrink: true }}
+            size="small"
+          />
+          <Button variant="contained" onClick={handleApplyDateRange}>
+            Apply
+          </Button>
+        </Box>
+
         {loading ? (
           <Box display="flex" justifyContent="center" alignItems="center" minHeight={240}>
             <CircularProgress />
@@ -82,7 +151,7 @@ function MonthlyExpenseDetails() {
         ) : (
           <TableContainer component={Paper}>
             <Table size="small">
-              <TableHead>
+              <TableHead sx={commonTableHeadSx}>
                 <TableRow>
                   <TableCell style={{ fontWeight: "bold" }}>SL NO</TableCell>
                   <TableCell style={{ fontWeight: "bold" }}>ITEM</TableCell>
@@ -92,18 +161,18 @@ function MonthlyExpenseDetails() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {monthlyExpenseItems.length === 0 ? (
+                {expenseList.length === 0 ? (
                   <TableRow>
                     <TableCell colSpan={5} align="center">
                       No data found
                     </TableCell>
                   </TableRow>
                 ) : (
-                  monthlyExpenseItems.map((item, index) => (
-                    <TableRow key={item.finance_id} hover>
+                  expenseList.map((item, index) => (
+                    <TableRow key={item.transaction_id} hover>
                       <TableCell>{index + 1}</TableCell>
-                      <TableCell>{item.finance_category_name || "-"}</TableCell>
-                      <TableCell>{item.description || "-"}</TableCell>
+                      <TableCell>{formatReferenceType(item.reference_type)}</TableCell>
+                      <TableCell>{item.reference_name || item.description || "-"}</TableCell>
                       <TableCell>{formatDate(item.created_at || item.transaction_date)}</TableCell>
                       <TableCell>{formatCurrency(item.amount)}</TableCell>
                     </TableRow>

@@ -47,6 +47,7 @@ import paymentDetails from "../Pages/Sidebar/Invoice/InvoiceDetail/PaymentDetail
 import monthlyIncomeDetails from "../Pages/Sidebar/Dashboard/MonthlyIncomeDetails.slice.ts";
 import monthlyExpenseDetails from "../Pages/Sidebar/Dashboard/MonthlyExpenseDetails.slice.ts";
 import transactionLogs from "../Pages/Sidebar/TransactionLogs/TransactionLogs.slice.ts";
+import statement from "../Pages/Sidebar/Statement/Statement.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -98,6 +99,7 @@ export const store = configureStore({
    monthlyIncomeDetails,
    monthlyExpenseDetails,
    transactionLogs,
+   statement,
   },
 });
 

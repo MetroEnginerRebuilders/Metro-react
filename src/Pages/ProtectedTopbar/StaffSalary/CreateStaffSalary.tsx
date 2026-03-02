@@ -20,7 +20,7 @@ import {
   getStaffSalaryMonthSummaryApi,
 } from "../../../service/staffSalary";
 import { getActiveStaffListApi } from "../../../service/staff";
-import { getBankAccountListApi } from "../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
 import Breadcrumb from "../../../Components/Breadcrumb";
 import SearchableSelect from "../../../Components/SearchableSelect";
@@ -52,7 +52,7 @@ function CreateStaffSalary() {
     try {
       const [staffResponse, bankResponse, salaryTypeResponse] = await Promise.all([
         getActiveStaffListApi({ limit: 100 }),
-        getBankAccountListApi({ limit: 100 }),
+        getActiveBankAccountListApi(),
         getSalaryTypeListApi(),
       ]);
 
@@ -127,7 +127,9 @@ function CreateStaffSalary() {
   const bankAccountOptions = useMemo(() =>
     bankAccounts.map((account) => ({
       value: account.bank_account_id,
-      label: `${account.account_name} - ${account.account_number}`,
+      label: (account.account_number || "").trim()
+        ? `${account.account_name} - ${account.account_number}`
+        : account.account_name,
     })),
     [bankAccounts]
   );

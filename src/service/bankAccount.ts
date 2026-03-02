@@ -14,6 +14,16 @@ export const getBankAccountListApi = async (params: GetBankAccountListParams): P
   return response.data;
 };
 
+export const getActiveBankAccountListApi = async (): Promise<BankAccountApiResponse<BankAccount[]>> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/bank-account/active`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
 export const createBankAccountApi = async (data: BankAccountFormData): Promise<BankAccountApiResponse<BankAccount>> => {
   const token = sessionStorage.getItem("token");
   const response = await axios.post(`${BASE_URL}/bank-account`, data, {

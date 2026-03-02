@@ -6,6 +6,7 @@ const initialState: EditBankAccountState = {
   account_number: "",
   opening_balance: "",
   activate_date: "",
+  inactivate_date: "",
 };
 
 const editBankAccountSlice = createSlice({

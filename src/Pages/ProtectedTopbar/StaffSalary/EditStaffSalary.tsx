@@ -82,7 +82,9 @@ const EditStaffSalary = ({
   const bankAccountOptions = useMemo(() =>
     bankAccounts.map((account) => ({
       value: account.bank_account_id,
-      label: `${account.account_name} - ${account.account_number}`,
+      label: (account.account_number || "").trim()
+        ? `${account.account_name} - ${account.account_number}`
+        : account.account_name,
     })),
     [bankAccounts]
   );

@@ -18,7 +18,7 @@ import type { AppDispatch, RootState } from "../../../../store/store";
 import { setField, setIncomeData, resetForm } from "./EditIncome.slice";
 import { updateIncomeApi } from "../../../../service/income";
 import { getIncomeCategoryListApi } from "../../../../service/incomeCategory";
-import { getBankAccountListApi } from "../../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../../service/bankAccount";
 import type { IncomeCategory } from "../../../../type/incomeCategory";
 import type { BankAccount } from "../../../../type/bankAccount";
 import type { Income, EditIncomeState } from "../../../../type/income";
@@ -58,7 +58,7 @@ const EditIncome = ({ open, onClose, income }: EditIncomeProps) => {
     try {
       const [categoriesResponse, accountsResponse] = await Promise.all([
         getIncomeCategoryListApi(),
-        getBankAccountListApi({ page: 1, limit: 100 }),
+        getActiveBankAccountListApi(),
       ]);
 
       if (categoriesResponse.success && categoriesResponse.data) {
@@ -111,7 +111,9 @@ const EditIncome = ({ open, onClose, income }: EditIncomeProps) => {
     () => {
       const options = bankAccounts.map((acc) => ({
         value: acc.bank_account_id,
-        label: acc.account_name,
+        label: (acc.account_number || "").trim()
+          ? `${acc.account_name} - ${acc.account_number}`
+          : acc.account_name,
       }));
       return options;
     },

@@ -168,13 +168,14 @@ const BankAccount = () => {
                     <Table sx={{ minWidth: 650 }} size="small" aria-label="a dense table">
                         <TableHead sx={commonTableHeadSx}>
                             <TableRow>
-                                <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>ACCOUNT NAME</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>ACCOUNT NUMBER</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold' }}>OPENING BALANCE</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>ACTIVATE DATE</TableCell>
-                                <TableCell style={{ fontWeight: 'bold' }}>LAST TRANSACTION</TableCell>
-                                <TableCell align="right" style={{ fontWeight: 'bold' }}>CURRENT BALANCE</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>SL NO</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>ACCOUNT NAME</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>ACCOUNT NUMBER</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>OPENING BALANCE</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>ACTIVATE DATE</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>INACTIVE DATE</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>LAST TRANSACTION</TableCell>
+                                <TableCell align="center" style={{ fontWeight: 'bold' }}>CURRENT BALANCE</TableCell>
                                 <TableCell align="center" style={{ fontWeight: 'bold' }}>ACTIONS</TableCell>
                             </TableRow>
                         </TableHead>
@@ -182,13 +183,13 @@ const BankAccount = () => {
                         <TableBody>
                             {loading ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} align="center">
+                                    <TableCell colSpan={9} align="center">
                                         <CircularProgress size={30} />
                                     </TableCell>
                                 </TableRow>
                             ) : list.length === 0 ? (
                                 <TableRow>
-                                    <TableCell colSpan={8} align="center">
+                                    <TableCell colSpan={9} align="center">
                                         No data found
                                     </TableCell>
                                 </TableRow>
@@ -210,6 +211,9 @@ const BankAccount = () => {
                                             <TableCell align="center">{account.account_number}</TableCell>
                                             <TableCell align="center">₹{formatCurrency(account.opening_balance)}</TableCell>
                                             <TableCell align="center">{formatDate(account.activate_date)}</TableCell>
+                                            <TableCell align="center">
+                                                {account.inactivate_date ? formatDate(account.inactivate_date) : "-"}
+                                            </TableCell>
                                             <TableCell align="center">{formatDate(account.last_transaction)}</TableCell>
                                             <TableCell align="center">₹{formatCurrency(account.current_balance)}</TableCell>
                                             <TableCell align="center">

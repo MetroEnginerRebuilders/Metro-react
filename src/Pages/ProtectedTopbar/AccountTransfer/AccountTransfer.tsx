@@ -12,7 +12,7 @@ import { toast } from "react-toastify";
 import type { AppDispatch, RootState } from "../../../store/store";
 import { setField, resetForm } from "./AccountTransfer.slice";
 import type { AccountTransferState, BankAccount } from "../../../type/bankAccount";
-import { getBankAccountListApi, transferBankAccountApi } from "../../../service/bankAccount";
+import { getActiveBankAccountListApi, transferBankAccountApi } from "../../../service/bankAccount";
 import Breadcrumb from "../../../Components/Breadcrumb";
 import SearchableSelect from "../../../Components/SearchableSelect";
 
@@ -26,15 +26,22 @@ function AccountTransfer() {
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingAccounts, setLoadingAccounts] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     fetchBankAccounts();
   }, []);
 
+  useEffect(() => {
+    if (!transfer_date) {
+      dispatch(setField({ field: "transfer_date", value: today }));
+    }
+  }, [transfer_date, dispatch, today]);
+
   const fetchBankAccounts = async () => {
     setLoadingAccounts(true);
     try {
-      const response = await getBankAccountListApi({ limit: 100 });
+      const response = await getActiveBankAccountListApi();
       if (response.success && response.data) {
         setBankAccounts(response.data);
       }
@@ -56,7 +63,9 @@ function AccountTransfer() {
   const bankAccountOptions = useMemo(() =>
     bankAccounts.map((account) => ({
       value: account.bank_account_id,
-      label: `${account.account_name} - ${account.account_number} (₹${parseFloat(account.current_balance).toFixed(2)})`,
+      label: (account.account_number || "").trim()
+        ? `${account.account_name} - ${account.account_number}`
+        : account.account_name,
     })),
     [bankAccounts]
   );
@@ -106,6 +115,14 @@ function AccountTransfer() {
 
     if (!transfer_date) {
       toast.error("Transfer date is required", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (transfer_date > today) {
+      toast.error("Transfer date cannot be in the future", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -204,6 +221,7 @@ function AccountTransfer() {
               required
               size="small"
               type="date"
+              inputProps={{ max: today }}
               InputLabelProps={{
                 shrink: true,
               }}

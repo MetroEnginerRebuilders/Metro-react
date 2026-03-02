@@ -28,7 +28,7 @@ import ConfirmationDialog from "../../../Components/ConfirmationDialog";
 import Breadcrumb from "../../../Components/Breadcrumb";
 import { getStaffSalaryListApi, deleteStaffSalaryApi } from "../../../service/staffSalary";
 import { getActiveStaffListApi } from "../../../service/staff";
-import { getBankAccountListApi } from "../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
 import CommonPagination from "../../../Components/CommonPagination";
 import EditStaffSalary from "./EditStaffSalary";
@@ -75,7 +75,7 @@ function StaffSalary() {
     try {
       const [staffResponse, bankResponse, salaryTypeResponse] = await Promise.all([
         getActiveStaffListApi({ limit: 100 }),
-        getBankAccountListApi({ limit: 100 }),
+        getActiveBankAccountListApi(),
         getSalaryTypeListApi(),
       ]);
 

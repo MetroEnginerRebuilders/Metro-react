@@ -22,7 +22,7 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getShopListApi } from "../../../../service/shops";
-import { getBankAccountListApi } from "../../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../../service/bankAccount";
 import { getCompanyListApi } from "../../../../service/company";
 import { getModelListApi } from "../../../../service/model";
 import { getSpareListApi } from "../../../../service/spare";
@@ -65,11 +65,13 @@ function CreateStock() {
       }
 
       // Fetch bank accounts
-      const bankAccountsResponse = await getBankAccountListApi({ page: 1, limit: 100 });
+      const bankAccountsResponse = await getActiveBankAccountListApi();
       if (bankAccountsResponse.success && bankAccountsResponse.data) {
         setBankAccounts(bankAccountsResponse.data.map(account => ({
           value: account.bank_account_id,
-          label: `${account.account_name} - ${account.account_number}`
+          label: (account.account_number || "").trim()
+            ? `${account.account_name} - ${account.account_number}`
+            : account.account_name
         })));
       }
 

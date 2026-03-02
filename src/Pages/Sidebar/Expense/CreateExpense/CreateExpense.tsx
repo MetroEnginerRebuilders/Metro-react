@@ -18,7 +18,7 @@ import type { AppDispatch, RootState } from "../../../../store/store";
 import { setField, resetForm } from "./CreateExpense.slice";
 import { createExpenseApi } from "../../../../service/expense";
 import { getExpenseCategoryListApi } from "../../../../service/expenseCategory";
-import { getBankAccountListApi } from "../../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../../service/bankAccount";
 import type { ExpenseCategory } from "../../../../type/expenseCategory";
 import type { BankAccount } from "../../../../type/bankAccount";
 import type { CreateExpenseState } from "../../../../type/expense";
@@ -60,7 +60,7 @@ const CreateExpense = ({ open, onClose }: CreateExpenseProps) => {
     try {
       const [categoriesResponse, accountsResponse] = await Promise.all([
         getExpenseCategoryListApi(),
-        getBankAccountListApi({ page: 1, limit: 100 }),
+        getActiveBankAccountListApi(),
       ]);
 
       if (categoriesResponse.success && categoriesResponse.data) {
@@ -101,7 +101,9 @@ const CreateExpense = ({ open, onClose }: CreateExpenseProps) => {
     () =>
       bankAccounts.map((acc) => ({
         value: acc.bank_account_id,
-        label: acc.account_name,
+        label: (acc.account_number || "").trim()
+          ? `${acc.account_name} - ${acc.account_number}`
+          : acc.account_name,
       })),
     [bankAccounts]
   );

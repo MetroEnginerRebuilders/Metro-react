@@ -16,7 +16,7 @@ import SearchableSelect from "../../../../Components/SearchableSelect";
 import { useAppDispatch, useAppSelector } from "../../../../store/hooks";
 import { setField, setFormData, resetForm } from "./EditJob.slice";
 import { getCustomerListApi } from "../../../../service/customer";
-import { getBankAccountListApi } from "../../../../service/bankAccount";
+import { getActiveBankAccountListApi } from "../../../../service/bankAccount";
 import { getJobApi, updateJobApi } from "../../../../service/job";
 import type { Customer } from "../../../../type/customer";
 import type { BankAccount } from "../../../../type/bankAccount";
@@ -53,7 +53,7 @@ const EditJob = ({ open, onClose, onSuccess, job }: EditJobProps) => {
     try {
       const [customersResponse, accountsResponse] = await Promise.all([
         getCustomerListApi({ page: 1, limit: 100 }),
-        getBankAccountListApi({ page: 1, limit: 100 }),
+        getActiveBankAccountListApi(),
       ]);
 
       if (customersResponse.success && customersResponse.data) {
@@ -118,7 +118,9 @@ const EditJob = ({ open, onClose, onSuccess, job }: EditJobProps) => {
     () =>
       bankAccounts.map((account) => ({
         value: account.bank_account_id,
-        label: `${account.account_name} - ${account.account_number}`,
+        label: (account.account_number || "").trim()
+          ? `${account.account_name} - ${account.account_number}`
+          : account.account_name,
       })),
     [bankAccounts]
   );

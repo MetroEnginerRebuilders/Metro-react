@@ -9,7 +9,7 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
@@ -28,25 +28,24 @@ interface EditBankAccountProps {
 
 const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountProps) => {
   const dispatch = useDispatch<AppDispatch>();
-  const { account_name, account_number, opening_balance, activate_date } = useSelector(
+  const { account_name, account_number, opening_balance, activate_date, inactivate_date } = useSelector(
     (state: RootState) => state.editBankAccount
   );
 
   const [loading, setLoading] = useState(false);
+  const todayDate = useMemo(() => new Date().toISOString().split("T")[0], []);
 
   useEffect(() => {
     if (open && account) {
-      // Format the date to YYYY-MM-DD for the date input
-      const formattedDate = account.activate_date ? new Date(account.activate_date).toISOString().split('T')[0] : '';
-      
       dispatch(setFormData({
         account_name: account.account_name,
         account_number: account.account_number,
         opening_balance: account.opening_balance,
-        activate_date: formattedDate,
+        activate_date: todayDate,
+        inactivate_date: todayDate,
       }));
     }
-  }, [open, account, dispatch]);
+  }, [open, account, dispatch, todayDate]);
 
   const handleChange = (field: keyof EditBankAccountState, value: string) => {
     dispatch(setField({ field, value }));
@@ -58,14 +57,6 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
     // Validation
     if (!account_name?.trim()) {
       toast.error("Account name is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (!account_number?.trim()) {
-      toast.error("Account number is required", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -96,6 +87,22 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
       return;
     }
 
+    if (activate_date > todayDate) {
+      toast.error("Future dates are not allowed", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (inactivate_date && inactivate_date > todayDate) {
+      toast.error("Future dates are not allowed", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
     setLoading(true);
     try {
       const payload = {
@@ -103,6 +110,7 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
         accountNumber: account_number,
         openingBalance: opening_balance,
         activateDate: activate_date,
+        inactivateDate: inactivate_date || undefined,
       };
 
       const result = await updateBankAccountApi(account.bank_account_id, payload);
@@ -164,7 +172,6 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
             value={account_number}
             onChange={(e) => handleChange("account_number", e.target.value)}
             fullWidth
-            required
             size="small"
           />
           <TextField
@@ -185,6 +192,19 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
             required
             size="small"
             type="date"
+            inputProps={{ max: todayDate }}
+            InputLabelProps={{
+              shrink: true,
+            }}
+          />
+          <TextField
+            label="Inactivate Date"
+            value={inactivate_date}
+            onChange={(e) => handleChange("inactivate_date", e.target.value)}
+            fullWidth
+            size="small"
+            type="date"
+            inputProps={{ max: todayDate }}
             InputLabelProps={{
               shrink: true,
             }}

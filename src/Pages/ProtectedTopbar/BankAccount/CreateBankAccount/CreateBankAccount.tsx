@@ -9,7 +9,7 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
@@ -31,6 +31,14 @@ const CreateBankAccount = ({ open, onClose, onSuccess }: CreateBankAccountProps)
     (state: RootState) => state.createBankAccount
   );
 
+  const todayDate = useMemo(() => new Date().toISOString().split("T")[0], []);
+
+  useEffect(() => {
+    if (open) {
+      dispatch(setField({ field: "activate_date", value: todayDate }));
+    }
+  }, [open, dispatch, todayDate]);
+
   const [loading, setLoading] = useState(false);
 
   const handleChange = (field: keyof CreateBankAccountState, value: string) => {
@@ -41,14 +49,6 @@ const CreateBankAccount = ({ open, onClose, onSuccess }: CreateBankAccountProps)
     // Validation
     if (!account_name?.trim()) {
       toast.error("Account name is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (!account_number?.trim()) {
-      toast.error("Account number is required", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -73,6 +73,14 @@ const CreateBankAccount = ({ open, onClose, onSuccess }: CreateBankAccountProps)
 
     if (!activate_date) {
       toast.error("Activate date is required", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (activate_date > todayDate) {
+      toast.error("Future dates are not allowed", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -147,7 +155,6 @@ const CreateBankAccount = ({ open, onClose, onSuccess }: CreateBankAccountProps)
             value={account_number}
             onChange={(e) => handleChange("account_number", e.target.value)}
             fullWidth
-            required
             size="small"
           />
           <TextField
@@ -168,6 +175,7 @@ const CreateBankAccount = ({ open, onClose, onSuccess }: CreateBankAccountProps)
             required
             size="small"
             type="date"
+            inputProps={{ max: todayDate }}
             InputLabelProps={{
               shrink: true,
             }}

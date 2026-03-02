@@ -16,6 +16,7 @@ export interface BankAccountFormData {
   accountNumber: string;
   openingBalance: string;
   activateDate: string;
+  inactivateDate?: string;
 }
 
 export interface BankAccountListState {
@@ -42,6 +43,7 @@ export interface EditBankAccountState {
   account_number: string;
   opening_balance: string;
   activate_date: string;
+  inactivate_date: string;
 }
 
 export interface BankAccountApiResponse<T> {

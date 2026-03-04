@@ -25,9 +25,12 @@ import ConfirmationDialog from "../../../../Components/ConfirmationDialog";
 import CommonPagination from "../../../../Components/CommonPagination";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getExpenseListApi, deleteExpenseApi } from "../../../../service/expense";
+import { getExpenseCategoryListApi } from "../../../../service/expenseCategory";
 import EditExpense from "../EditExpense/EditExpense";
 import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../utils/formatters";
+import type { ExpenseCategory } from "../../../../type/expenseCategory";
+import SearchableSelect from "../../../../Components/SearchableSelect";
 
 const Expense = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,14 +48,17 @@ const Expense = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([]);
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
 
-  const fetchExpenses = async (page: number = 1, search?: string) => {
+  const fetchExpenses = async (page: number = 1, search?: string, financeCategoryName?: string) => {
     setLoading(true);
     try {
       const response = await getExpenseListApi({
         page,
         limit: 10,
         search: search || undefined,
+        financeCategoryName: financeCategoryName || undefined,
         financeTypeCode: "EXPENSE"
       });
       if (response.success && response.data && response.pagination) {
@@ -77,13 +83,31 @@ const Expense = () => {
     }
   };
 
+  const fetchExpenseCategories = async () => {
+    try {
+      const response = await getExpenseCategoryListApi();
+      if (response.success && response.data) {
+        setExpenseCategories(response.data);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to fetch expense categories", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchExpenseCategories();
+  }, []);
+
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      fetchExpenses(currentPage, searchTerm);
+      fetchExpenses(currentPage, searchTerm, selectedCategoryName);
     }, searchTerm ? 500 : 0);
 
     return () => clearTimeout(debounceTimer);
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, selectedCategoryName]);
 
   const handleDeleteClick = (expense: ExpenseType) => {
     setExpenseToDelete(expense);
@@ -105,7 +129,7 @@ const Expense = () => {
         });
         setOpenDeleteDialog(false);
         setExpenseToDelete(null);
-        fetchExpenses(currentPage, searchTerm);
+        fetchExpenses(currentPage, searchTerm, selectedCategoryName);
       }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || error.message || "Failed to delete expense";
@@ -131,7 +155,7 @@ const Expense = () => {
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setSelectedExpense(null);
-    fetchExpenses(currentPage, searchTerm);
+    fetchExpenses(currentPage, searchTerm, selectedCategoryName);
   };
 
   const handlePageChange = (page: number) => {
@@ -151,8 +175,23 @@ const Expense = () => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    fetchExpenses(currentPage, searchTerm);
+    fetchExpenses(currentPage, searchTerm, selectedCategoryName);
   };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategoryName(value);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  };
+
+  const expenseCategoryOptions = [
+    { value: "", label: "All Categories" },
+    ...expenseCategories.map((category) => ({
+      value: category.finance_category_name,
+      label: category.finance_category_name,
+    })),
+  ];
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },
@@ -171,13 +210,24 @@ const Expense = () => {
 
         <div className="max-w-full">
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center sm:justify-between">
-            <TextField
-              size="small"
-              placeholder="Search Expense"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              sx={{ width: { xs: '100%', sm: '250px' } }}
-            />
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div style={{ width: "250px", maxWidth: "100%" }}>
+                <SearchableSelect
+                  label="Expense Category"
+                  value={selectedCategoryName}
+                  onChange={handleCategoryChange}
+                  options={expenseCategoryOptions}
+                  size="small"
+                />
+              </div>
+              <TextField
+                size="small"
+                placeholder="Search Expense"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                sx={{ width: { xs: '100%', sm: '250px' } }}
+              />
+            </div>
             <Button variant="contained" onClick={handleOpenModal}>
               Create New
             </Button>

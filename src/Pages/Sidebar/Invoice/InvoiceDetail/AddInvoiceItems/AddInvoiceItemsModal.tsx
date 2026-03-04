@@ -30,8 +30,10 @@ import {
   getStockTransactionModelsApi,
   getStockTransactionSparesApi,
   addInvoiceItemsApi,
-  getBankAccountsApi,
 } from "../../../../../service/invoice";
+import { getStockTransactionAvailabilityApi } from "../../../../../service/stock";
+import { getActiveBankAccountListApi } from "../../../../../service/bankAccount";
+import { getWorkListApi } from "../../../../../service/works";
 import type {
   InvoiceAddItem,
   ModelData,
@@ -39,6 +41,7 @@ import type {
   AddInvoiceItemPayload,
   BankAccount,
 } from "../../../../../type/invoice";
+import type { Work } from "../../../../../type/works";
 import { useState, useEffect } from "react";
 import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
 
@@ -56,12 +59,14 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
   );
 
   const [bankAccounts, setBankAccounts] = useState<BankAccount[]>([]);
+  const [works, setWorks] = useState<Work[]>([]);
 
   const [addItemsRows, setAddItemsRows] = useState<InvoiceAddItem[]>([
     {
       tempId: Math.random().toString(),
       item_type_id: "",
       type_of_work: "",
+      work_id: "",
       company_id: "",
       model_id: "",
       spare_id: "",
@@ -82,10 +87,11 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
   const fetchAddItemsDropdowns = async () => {
     dispatch(setLoading(true));
     try {
-      const [typesRes, companiesRes, bankAccountsRes] = await Promise.all([
+      const [typesRes, companiesRes, bankAccountsRes, worksRes] = await Promise.all([
         getInvoiceItemTypesApi(),
         getStockTransactionCompaniesApi(),
-        getBankAccountsApi(),
+        getActiveBankAccountListApi(),
+        getWorkListApi({ page: 1, limit: 200 }),
       ]);
 
       if (typesRes.success && typesRes.data) {
@@ -99,6 +105,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
 
       if (bankAccountsRes.success && bankAccountsRes.data) {
         setBankAccounts(bankAccountsRes.data);
+      }
+
+      if (worksRes.success && worksRes.data) {
+        setWorks(worksRes.data);
       }
     } catch (error: any) {
       dispatch(setError("Failed to fetch dropdown data"));
@@ -118,6 +128,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
         tempId: Math.random().toString(),
         item_type_id: "",
         type_of_work: "",
+        work_id: "",
         company_id: "",
         model_id: "",
         spare_id: "",
@@ -149,6 +160,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
               ...r,
               item_type_id: itemTypeId,
               type_of_work: "",
+              work_id: "",
               company_id: "",
               model_id: "",
               spare_id: "",
@@ -171,8 +183,8 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     });
   };
 
-  const handleTypeOfWorkChange = (tempId: string, value: string) => {
-    handleRowChange(tempId, "type_of_work", value);
+  const handleWorkChange = (tempId: string, workId: string) => {
+    handleRowChange(tempId, "work_id", workId);
   };
 
   const handleRemarksChange = (tempId: string, value: string) => {
@@ -187,19 +199,70 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     handleRowChange(tempId, "unit_price", value);
   };
 
+  const applySpareBoughtPrice = async (
+    tempId: string,
+    companyId: string,
+    modelId: string,
+    spareId: string,
+    itemTypeId: string
+  ) => {
+    const selectedItemType = itemTypes.find((type) => type.item_type_id === itemTypeId);
+    if (selectedItemType?.item_type_code !== "SPARE") {
+      return;
+    }
+
+    try {
+      const response = await getStockTransactionAvailabilityApi({
+        companyId,
+        modelId,
+        spareId,
+      });
+
+      if (response.success && response.data) {
+        setAddItemsRows((prev) =>
+          prev.map((row) =>
+            row.tempId === tempId
+              ? { ...row, unit_price: String(response.data.boughtPrice ?? "0") }
+              : row
+          )
+        );
+      }
+    } catch (error) {
+      toast.error("Failed to fetch stock availability");
+    }
+  };
+
   const handleBankAccountChange = (tempId: string, bankAccountId: string) => {
     handleRowChange(tempId, "bank_account_id", bankAccountId);
   };
 
   const handleSpareChange = (tempId: string, spareId: string) => {
     handleRowChange(tempId, "spare_id", spareId);
+
+    const selectedRow = addItemsRows.find((row) => row.tempId === tempId);
+    if (!selectedRow) return;
+
+    if (!spareId) {
+      handleRowChange(tempId, "unit_price", "0");
+      return;
+    }
+
+    if (selectedRow.company_id && selectedRow.model_id) {
+      applySpareBoughtPrice(
+        tempId,
+        selectedRow.company_id,
+        selectedRow.model_id,
+        spareId,
+        selectedRow.item_type_id
+      );
+    }
   };
 
   const handleCompanyChange = async (tempId: string, companyId: string) => {
     setAddItemsRows(
       addItemsRows.map((row) =>
         row.tempId === tempId
-          ? { ...row, company_id: companyId, model_id: "", spare_id: "" }
+          ? { ...row, company_id: companyId, model_id: "", spare_id: "", unit_price: "0" }
           : row
       )
     );
@@ -228,7 +291,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
   const handleModelChange = async (tempId: string, modelId: string) => {
     setAddItemsRows(
       addItemsRows.map((row) =>
-        row.tempId === tempId ? { ...row, model_id: modelId, spare_id: "" } : row
+        row.tempId === tempId ? { ...row, model_id: modelId, spare_id: "", unit_price: "0" } : row
       )
     );
 
@@ -278,10 +341,10 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
           return;
         }
       }
-      // WORK validation: type_of_work, quantity, unit_price are mandatory
+      // WORK validation: work_id, quantity, unit_price are mandatory
       else if (isWork) {
-        if (!row.type_of_work || row.type_of_work.trim() === "") {
-          toast.error(`Please enter type of work for row ${i + 1} (WORK)`);
+        if (!row.work_id) {
+          toast.error(`Please select work for row ${i + 1} (WORK)`);
           return;
         }
         if (!row.quantity || parseFloat(row.quantity) <= 0) {
@@ -342,7 +405,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
 
       return {
         item_type_id: row.item_type_id,
-        type_of_work: isWork ? row.type_of_work || undefined : undefined,
+        work_id: isWork ? row.work_id || undefined : undefined,
         company_id: isSpare ? row.company_id || undefined : undefined,
         model_id: isSpare ? row.model_id || undefined : undefined,
         spare_id: isSpare ? row.spare_id || undefined : undefined,
@@ -386,6 +449,7 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
         tempId: Math.random().toString(),
         item_type_id: "",
         type_of_work: "",
+        work_id: "",
         company_id: "",
         model_id: "",
         spare_id: "",
@@ -532,23 +596,31 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                   {showTypeOfWorkColumn && (
                     <TableCell style={{ flex: 1, padding: "4px" }}>
                       {showTypeOfWork ? (
-                        <TextField
+                        <Autocomplete
                           size="small"
-                          value={row.type_of_work}
-                          onChange={(e) => handleTypeOfWorkChange(row.tempId, e.target.value)}
-                          placeholder={isWork ? "Type (Required)" : "Type"}
-                          fullWidth
-                          variant="outlined"
-                          error={isWork && !row.type_of_work}
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              height: "40px",
-                            },
-                            "& .MuiOutlinedInput-input": {
-                              padding: "8px 12px",
-                              height: "24px",
-                            },
+                          options={works}
+                          getOptionLabel={(option) =>
+                            typeof option === "string" ? option : option.work_name
+                          }
+                          value={
+                            works.find((work) => work.work_id === row.work_id) ||
+                            null
+                          }
+                          onChange={(_, newValue) => {
+                            handleWorkChange(row.tempId, newValue?.work_id || "");
                           }}
+                          disabled={loading}
+                          isOptionEqualToValue={(option, value) =>
+                            option.work_id === value?.work_id
+                          }
+                          renderInput={(params) => (
+                            <TextField
+                              {...params}
+                              placeholder={isWork ? "Select (Required)" : "Select"}
+                              error={isWork && !row.work_id}
+                            />
+                          )}
+                          noOptionsText="No works available"
                         />
                       ) : null}
                     </TableCell>

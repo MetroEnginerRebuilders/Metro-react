@@ -52,6 +52,8 @@ export interface InvoiceItem {
   item_type_name?: string;
   item_type_code?: string;
   work_id?: string | null;
+  work_name?: string | null;
+  type_of_work?: string | null;
   spare_id?: string | null;
   remarks?: string | null;
   quantity: number;
@@ -155,6 +157,7 @@ export interface InvoiceAddItem {
   tempId: string;
   item_type_id: string;
   type_of_work: string;
+  work_id: string;
   company_id: string;
   model_id: string;
   spare_id: string;
@@ -167,6 +170,7 @@ export interface InvoiceAddItem {
 export interface AddInvoiceItemPayload {
   item_type_id: string;
   type_of_work?: string;
+  work_id?: string;
   company_id?: string;
   model_id?: string;
   spare_id?: string;

@@ -68,23 +68,7 @@ const EditCompany = ({ open, onClose, company }: EditCompanyProps) => {
       return;
     }
 
-    if (!executive_name?.trim()) {
-      toast.error("Executive name is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (!executive_phone_number?.trim()) {
-      toast.error("Phone number is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (executive_phone_number.length !== 10) {
+    if (executive_phone_number?.trim() && executive_phone_number.length !== 10) {
       toast.error("Phone number must be exactly 10 digits", {
         position: "top-center",
         autoClose: 3000,
@@ -156,7 +140,6 @@ const EditCompany = ({ open, onClose, company }: EditCompanyProps) => {
             value={executive_name}
             onChange={(e) => handleChange("executive_name", e.target.value)}
             fullWidth
-            required
             size="small"
           />
           <TextField
@@ -164,7 +147,6 @@ const EditCompany = ({ open, onClose, company }: EditCompanyProps) => {
             value={executive_phone_number}
             onChange={(e) => handleChange("executive_phone_number", e.target.value)}
             fullWidth
-            required
             size="small"
             placeholder="10 digits"
             inputProps={{ maxLength: 10 }}

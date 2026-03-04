@@ -72,4 +72,5 @@ export interface GetIncomeListParams {
   limit?: number;
   search?: string;
   financeTypeCode?: string;
+  financeCategoryName?: string;
 }

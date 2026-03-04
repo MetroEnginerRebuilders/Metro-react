@@ -111,3 +111,20 @@ export interface DeleteStockResponse {
   success: boolean;
   message: string;
 }
+
+export interface StockTransactionAvailabilityPayload {
+  companyId: string;
+  modelId: string;
+  spareId: string;
+}
+
+export interface StockTransactionAvailabilityData {
+  availableQuantity: number;
+  boughtPrice: number;
+}
+
+export interface StockTransactionAvailabilityResponse {
+  success: boolean;
+  message: string;
+  data: StockTransactionAvailabilityData;
+}

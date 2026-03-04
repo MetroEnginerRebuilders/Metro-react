@@ -27,7 +27,7 @@ import { getCompanyListApi } from "../../../../service/company";
 import { getModelListApi } from "../../../../service/model";
 import { getSpareListApi } from "../../../../service/spare";
 import { getStockTypeListApi } from "../../../../service/stockType";
-import { createStockApi, getStockTransactionCompaniesApi, getStockTransactionModelsApi, getStockTransactionSparesApi } from "../../../../service/stock";
+import { createStockApi, getStockTransactionAvailabilityApi, getStockTransactionCompaniesApi, getStockTransactionModelsApi, getStockTransactionSparesApi } from "../../../../service/stock";
 
 function CreateStock() {
   const navigate = useNavigate();
@@ -190,9 +190,76 @@ function CreateStock() {
     }
   };
 
+  const applyAvailabilityBoughtPrice = async (
+    index: number,
+    companyId: string,
+    modelId: string,
+    spareId: string
+  ) => {
+    try {
+      const response = await getStockTransactionAvailabilityApi({
+        companyId,
+        modelId,
+        spareId,
+      });
+
+      if (response.success && response.data) {
+        dispatch(
+          setItemField({
+            index,
+            field: "unitPrice",
+            value: String(response.data.boughtPrice ?? ""),
+          })
+        );
+      }
+    } catch (error) {
+      toast.error("Failed to fetch stock availability");
+    }
+  };
+
   // Handler for item select dropdowns
   const handleItemSelectChange = (index: number, field: keyof StockItem) => async (value: string) => {
+    const currentItem = formState.items[index];
+    let selectedCompanyId = currentItem?.companyId || "";
+    let selectedModelId = currentItem?.modelId || "";
+    let selectedSpareId = currentItem?.itemId || "";
+
+    if (field === "companyId") {
+      selectedCompanyId = value;
+      selectedModelId = "";
+      selectedSpareId = "";
+    }
+
+    if (field === "modelId") {
+      selectedModelId = value;
+      selectedSpareId = "";
+    }
+
+    if (field === "itemId") {
+      selectedSpareId = value;
+    }
+
     dispatch(setItemField({ index, field, value }));
+
+    if (formState.transactionType === "RETURN" && field === "companyId") {
+      dispatch(setItemField({ index, field: "modelId", value: "" }));
+      dispatch(setItemField({ index, field: "itemId", value: "" }));
+      dispatch(setItemField({ index, field: "unitPrice", value: "" }));
+      setItemSpares((prev) => {
+        const next = { ...prev };
+        delete next[index];
+        return next;
+      });
+    }
+
+    if (formState.transactionType === "RETURN" && field === "modelId") {
+      dispatch(setItemField({ index, field: "itemId", value: "" }));
+      dispatch(setItemField({ index, field: "unitPrice", value: "" }));
+    }
+
+    if (formState.transactionType === "RETURN" && field === "itemId" && !value) {
+      dispatch(setItemField({ index, field: "unitPrice", value: "" }));
+    }
     
     // If company is selected and transaction type is RETURN, fetch models for that company
     if (field === "companyId" && value && formState.transactionType === "RETURN") {
@@ -230,6 +297,15 @@ function CreateStock() {
         console.error("Error fetching spares for model:", error);
         toast.error("Failed to load spares for selected model");
       }
+    }
+
+    if (
+      formState.transactionType === "RETURN" &&
+      selectedCompanyId &&
+      selectedModelId &&
+      selectedSpareId
+    ) {
+      await applyAvailabilityBoughtPrice(index, selectedCompanyId, selectedModelId, selectedSpareId);
     }
   };
 

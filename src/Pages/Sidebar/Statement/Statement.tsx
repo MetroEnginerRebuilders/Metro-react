@@ -49,6 +49,15 @@ const formatAmountOrDash = (value: number | null | undefined): string => {
   return amount > 0 ? formatCurrency(amount) : "-";
 };
 
+const formatExportDate = (dateValue: string): string => {
+  const formatted = formatDate(dateValue);
+  if (!formatted || formatted === "-") {
+    return "-";
+  }
+
+  return `'${formatted}`;
+};
+
 function Statement() {
   const dispatch = useAppDispatch();
   const {
@@ -221,7 +230,7 @@ function Statement() {
 
     const rows = statementRows.map((row, index) => [
       String(index + 1),
-      formatDate(row.date),
+      formatExportDate(row.date),
       row.stock_type || (row.type === "customer" ? "Customer" : "Shop"),
       row.description,
       row.item,

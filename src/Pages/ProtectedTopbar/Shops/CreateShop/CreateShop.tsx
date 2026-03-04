@@ -55,23 +55,7 @@ function CreateShop({ open, onClose }: CreateShopProps) {
       return;
     }
 
-    if (!shopAddress.trim()) {
-      toast.warn("Please enter address", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (!shopPhoneNumber.trim()) {
-      toast.warn("Please enter phone number", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return;
-    }
-
-    if (shopPhoneNumber.length !== 10) {
+    if (shopPhoneNumber.trim() && shopPhoneNumber.length !== 10) {
       toast.warn("Phone number must be exactly 10 digits", {
         position: "top-center",
         autoClose: 3000,
@@ -136,7 +120,6 @@ function CreateShop({ open, onClose }: CreateShopProps) {
             placeholder="Enter shop name"
           />
           <TextField
-            required
             name="shopAddress"
             label="Address"
             type="text"
@@ -149,7 +132,6 @@ function CreateShop({ open, onClose }: CreateShopProps) {
             rows={2}
           />
           <TextField
-            required
             name="shopPhoneNumber"
             label="Phone"
             type="text"

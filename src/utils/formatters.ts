@@ -39,6 +39,8 @@ export const formatCurrency = (amount: string | number | null | undefined): stri
 export const formatInvoiceItemRemarks = (item: {
   item_type_code?: string;
   remarks?: string | null;
+  work_name?: string | null;
+  type_of_work?: string | null;
   company_name?: string;
   spare_name?: string;
   model_name?: string;
@@ -51,13 +53,14 @@ export const formatInvoiceItemRemarks = (item: {
     case "DISCOUNT":
       return item.item_type_code;
     case "WORK":
-      return item.remarks || "-";
+      const workLabel = item.work_name || item.type_of_work || "";
+      const workRemarks = item.remarks || "";
+      if (workLabel && workRemarks) {
+        return `${workLabel} - ${workRemarks}`;
+      }
+      return workLabel || workRemarks || "-";
     case "COMMISSION":
-      const parts = ["Commission"];
-      if (item.remarks) parts.push(item.remarks);
-      if (item.account_name) parts.push(item.account_name);
-      else if (item.account_number) parts.push(item.account_number);
-      return parts.length > 1 ? parts.join("-") : (item.remarks || "-");
+      return "Commission";
     case "SPARE":
       const spareParts = [];
       if (item.company_name) spareParts.push(item.company_name);

@@ -33,21 +33,21 @@ const EditStaff = ({ open, onClose, staff, onSuccess }: EditStaffProps) => {
   );
 
   const [loading, setLoading] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
 
   useEffect(() => {
     if (open && staff) {
       // Format the dates to YYYY-MM-DD for the date input
       const formattedActiveDate = staff.active_date ? new Date(staff.active_date).toISOString().split('T')[0] : '';
-      const formattedInactiveDate = staff.inactive_date ? new Date(staff.inactive_date).toISOString().split('T')[0] : '';
       
       dispatch(setFormData({
         staff_name: staff.staff_name,
         salary: staff.salary,
-        active_date: formattedActiveDate,
-        inactive_date: formattedInactiveDate,
+        active_date: formattedActiveDate || today,
+        inactive_date: today,
       }));
     }
-  }, [open, staff, dispatch]);
+  }, [open, staff, dispatch, today]);
 
   const handleChange = (field: keyof EditStaffState, value: string) => {
     dispatch(setField({ field, value }));
@@ -83,6 +83,22 @@ const EditStaff = ({ open, onClose, staff, onSuccess }: EditStaffProps) => {
 
     if (!active_date) {
       toast.error("Active date is required", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (active_date > today) {
+      toast.error("Active date cannot be in the future", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (inactive_date?.trim() && inactive_date > today) {
+      toast.error("Inactive date cannot be in the future", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -174,6 +190,9 @@ const EditStaff = ({ open, onClose, staff, onSuccess }: EditStaffProps) => {
             required
             size="small"
             type="date"
+            inputProps={{
+              max: today,
+            }}
             InputLabelProps={{
               shrink: true,
             }}
@@ -185,6 +204,9 @@ const EditStaff = ({ open, onClose, staff, onSuccess }: EditStaffProps) => {
             fullWidth
             size="small"
             type="date"
+            inputProps={{
+              max: today,
+            }}
             InputLabelProps={{
               shrink: true,
             }}

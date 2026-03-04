@@ -72,4 +72,5 @@ export interface GetExpenseListParams {
   limit?: number;
   search?: string;
   financeTypeCode?: string;
+  financeCategoryName?: string;
 }

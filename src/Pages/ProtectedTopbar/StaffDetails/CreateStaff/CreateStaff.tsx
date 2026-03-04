@@ -9,7 +9,7 @@ import {
   IconButton,
   Box,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { FiX } from "react-icons/fi";
@@ -32,6 +32,13 @@ const CreateStaff = ({ open, onClose, onSuccess }: CreateStaffProps) => {
   );
 
   const [loading, setLoading] = useState(false);
+  const today = new Date().toISOString().split("T")[0];
+
+  useEffect(() => {
+    if (open && !active_date) {
+      dispatch(setField({ field: "active_date", value: today }));
+    }
+  }, [open, active_date, dispatch, today]);
 
   const handleChange = (field: keyof CreateStaffState, value: string) => {
     dispatch(setField({ field, value }));
@@ -65,6 +72,14 @@ const CreateStaff = ({ open, onClose, onSuccess }: CreateStaffProps) => {
 
     if (!active_date) {
       toast.error("Active date is required", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      return;
+    }
+
+    if (active_date > today) {
+      toast.error("Active date cannot be in the future", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -151,6 +166,9 @@ const CreateStaff = ({ open, onClose, onSuccess }: CreateStaffProps) => {
             required
             size="small"
             type="date"
+            inputProps={{
+              max: today,
+            }}
             InputLabelProps={{
               shrink: true,
             }}

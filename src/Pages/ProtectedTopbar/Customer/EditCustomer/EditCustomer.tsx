@@ -231,9 +231,6 @@ const EditCustomer = ({ open, onClose, customer }: EditCustomerProps) => {
         </div>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose} disabled={loading}>
-          Cancel
-        </Button>
         <Button onClick={handleSubmit} variant="contained" disabled={loading}>
           {loading ? <CircularProgress size={24} /> : "Update"}
         </Button>

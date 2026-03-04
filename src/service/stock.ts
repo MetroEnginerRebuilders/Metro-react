@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { CreateStockRequest, Stock, ApiResponse } from "../type/stock";
+import type { CreateStockRequest, Stock, ApiResponse, StockTransactionAvailabilityPayload, StockTransactionAvailabilityResponse } from "../type/stock";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -70,6 +70,18 @@ export const getStockListApi = async (params: import("../type/stock").StockListP
 export const deleteStockItemApi = async (stockTransactionItemId: string): Promise<import("../type/stock").DeleteStockResponse> => {
   const token = sessionStorage.getItem("token");
   const response = await axios.delete(`${BASE_URL}/stock-transaction-item/${stockTransactionItemId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const getStockTransactionAvailabilityApi = async (
+  payload: StockTransactionAvailabilityPayload
+): Promise<StockTransactionAvailabilityResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.post(`${BASE_URL}/stock-transaction/availability`, payload, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

@@ -25,9 +25,12 @@ import ConfirmationDialog from "../../../../Components/ConfirmationDialog";
 import CommonPagination from "../../../../Components/CommonPagination";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getIncomeListApi, deleteIncomeApi } from "../../../../service/income";
+import { getIncomeCategoryListApi } from "../../../../service/incomeCategory";
 import EditIncome from "../EditIncome/EditIncome";
 import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../utils/formatters";
+import type { IncomeCategory } from "../../../../type/incomeCategory";
+import SearchableSelect from "../../../../Components/SearchableSelect";
 
 const Income = () => {
   const dispatch = useDispatch<AppDispatch>();
@@ -45,14 +48,17 @@ const Income = () => {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const [incomeCategories, setIncomeCategories] = useState<IncomeCategory[]>([]);
+  const [selectedCategoryName, setSelectedCategoryName] = useState("");
 
-  const fetchIncomes = async (page: number = 1, search?: string) => {
+  const fetchIncomes = async (page: number = 1, search?: string, financeCategoryName?: string) => {
     setLoading(true);
     try {
       const response = await getIncomeListApi({
         page,
         limit: 10,
         search: search || undefined,
+        financeCategoryName: financeCategoryName || undefined,
         financeTypeCode: "INCOME"
       });
       if (response.success && response.data && response.pagination) {
@@ -77,13 +83,31 @@ const Income = () => {
     }
   };
 
+  const fetchIncomeCategories = async () => {
+    try {
+      const response = await getIncomeCategoryListApi();
+      if (response.success && response.data) {
+        setIncomeCategories(response.data);
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to fetch income categories", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    }
+  };
+
+  useEffect(() => {
+    fetchIncomeCategories();
+  }, []);
+
   useEffect(() => {
     const debounceTimer = setTimeout(() => {
-      fetchIncomes(currentPage, searchTerm);
+      fetchIncomes(currentPage, searchTerm, selectedCategoryName);
     }, searchTerm ? 500 : 0);
 
     return () => clearTimeout(debounceTimer);
-  }, [currentPage, searchTerm]);
+  }, [currentPage, searchTerm, selectedCategoryName]);
 
   const handleDeleteClick = (income: IncomeType) => {
     setIncomeToDelete(income);
@@ -105,7 +129,7 @@ const Income = () => {
         });
         setOpenDeleteDialog(false);
         setIncomeToDelete(null);
-        fetchIncomes(currentPage, searchTerm);
+        fetchIncomes(currentPage, searchTerm, selectedCategoryName);
       }
     } catch (error: any) {
       const errorMessage = error?.response?.data?.message || error.message || "Failed to delete income";
@@ -131,7 +155,7 @@ const Income = () => {
   const handleCloseEditModal = () => {
     setOpenEditModal(false);
     setSelectedIncome(null);
-    fetchIncomes(currentPage, searchTerm);
+    fetchIncomes(currentPage, searchTerm, selectedCategoryName);
   };
 
   const handlePageChange = (page: number) => {
@@ -151,8 +175,23 @@ const Income = () => {
 
   const handleCloseModal = () => {
     setOpenModal(false);
-    fetchIncomes(currentPage, searchTerm);
+    fetchIncomes(currentPage, searchTerm, selectedCategoryName);
   };
+
+  const handleCategoryChange = (value: string) => {
+    setSelectedCategoryName(value);
+    if (currentPage !== 1) {
+      setCurrentPage(1);
+    }
+  };
+
+  const incomeCategoryOptions = [
+    { value: "", label: "All Categories" },
+    ...incomeCategories.map((category) => ({
+      value: category.finance_category_name,
+      label: category.finance_category_name,
+    })),
+  ];
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },
@@ -171,13 +210,24 @@ const Income = () => {
 
         <div className="max-w-full">
           <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center sm:justify-between">
-            <TextField
-              size="small"
-              placeholder="Search Income"
-              value={searchTerm}
-              onChange={(e) => handleSearchChange(e.target.value)}
-              sx={{ width: { xs: '100%', sm: '250px' } }}
-            />
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+              <div style={{ width: "250px", maxWidth: "100%" }}>
+                <SearchableSelect
+                  label="Income Category"
+                  value={selectedCategoryName}
+                  onChange={handleCategoryChange}
+                  options={incomeCategoryOptions}
+                  size="small"
+                />
+              </div>
+              <TextField
+                size="small"
+                placeholder="Search Income"
+                value={searchTerm}
+                onChange={(e) => handleSearchChange(e.target.value)}
+                sx={{ width: { xs: '100%', sm: '250px' } }}
+              />
+            </div>
             <Button variant="contained" onClick={handleOpenModal}>
               Create New
             </Button>

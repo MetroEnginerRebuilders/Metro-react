@@ -138,14 +138,6 @@ const EditJob = ({ open, onClose, onSuccess, job }: EditJobProps) => {
       return false;
     }
 
-    if (!formState.description?.trim()) {
-      toast.error("Description is required", {
-        position: "top-center",
-        autoClose: 3000,
-      });
-      return false;
-    }
-
     if (!formState.start_date?.trim()) {
       toast.error("Start date is required", {
         position: "top-center",
@@ -261,7 +253,6 @@ const EditJob = ({ open, onClose, onSuccess, job }: EditJobProps) => {
               fullWidth
               multiline
               rows={3}
-              required
             />
 
             {/* Start Date */}

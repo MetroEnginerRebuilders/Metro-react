@@ -27,9 +27,9 @@ import {
   setPaymentError,
 } from "./Payment.slice";
 import {
-  getBankAccountsApi,
   makePaymentApi,
 } from "../../../../../service/invoice";
+import { getActiveBankAccountListApi } from "../../../../../service/bankAccount";
 import type { BankAccount, MakePaymentPayload } from "../../../../../type/invoice";
 
 interface PaymentModalProps {
@@ -76,7 +76,7 @@ const PaymentModal = ({
   const fetchBankAccounts = async () => {
     dispatch(setLoading(true));
     try {
-      const response = await getBankAccountsApi();
+      const response = await getActiveBankAccountListApi();
       if (response.success && response.data) {
         dispatch(setBankAccounts(response.data));
       } else {

@@ -85,3 +85,35 @@ export interface AccountTransferApiResponse {
   message?: string;
   data?: any;
 }
+
+export interface AccountTransferListParams {
+  fromDate: string;
+  toDate: string;
+  search: string;
+  page: number;
+  limit: number;
+}
+
+export interface AccountTransferListItem {
+  account_transfer_id?: string;
+  account_name: string;
+  finance_type_name: string;
+  reference_type: string;
+  transaction_date: string;
+  description: string;
+  amount: number;
+}
+
+export interface AccountTransferListApiResponse {
+  success: boolean;
+  message?: string;
+  data?: AccountTransferListItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
+}

@@ -15,23 +15,26 @@ import {
 } from "@mui/material";
 import { useCallback, useEffect, useState } from "react";
 import { FiTrash2 } from "react-icons/fi";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Breadcrumb from "../../../../../Components/Breadcrumb";
 import ConfirmationDialog from "../../../../../Components/ConfirmationDialog";
 import { deleteStockItemApi, getStockTransactionDetailsApi } from "../../../../../service/stock";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
+import { openStockPaymentModal } from "../../StockPayment/StockPayment.slice";
+import StockPaymentModal from "../../StockPayment/StockPaymentModal";
+import StockPaymentDetailsModal from "../../StockPaymentDetails/StockPaymentDetailsModal";
 import { resetViewStock, setDetails, setError, setLoading } from "./ViewStock.slice";
 
 function ViewStock() {
-  const navigate = useNavigate();
   const { stockTransactionId } = useParams<{ stockTransactionId: string }>();
   const dispatch = useAppDispatch();
   const { loading, details } = useAppSelector((state) => state.viewStock);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+  const [paymentDetailsOpen, setPaymentDetailsOpen] = useState(false);
 
   const fetchDetails = useCallback(async () => {
     if (!stockTransactionId) {
@@ -76,17 +79,31 @@ function ViewStock() {
   ];
 
   const handlePay = () => {
-    navigate("/payment");
+    const today = new Date().toISOString().split("T")[0];
+    const totalAmount = Number(details?.transaction?.total_amount || 0);
+    const amountPaid = Number(details?.transaction?.amount_paid || 0);
+    const remainingAmount = Math.max(totalAmount - amountPaid, 0);
+
+    dispatch(
+      openStockPaymentModal({
+        paymentDate: today,
+        paymentAmount: remainingAmount.toFixed(2),
+      })
+    );
   };
 
   const handlePaymentDetails = () => {
-    toast.info("Payment details page is not available yet");
+    setPaymentDetailsOpen(true);
   };
 
   const handleDeleteClick = (stockTransactionItemId: string) => {
     setItemToDelete(stockTransactionItemId);
     setDeleteDialogOpen(true);
   };
+
+  const totalAmount = Number(details?.transaction?.total_amount || 0);
+  const amountPaid = Number(details?.transaction?.amount_paid || 0);
+  const remainingAmount = Math.max(totalAmount - amountPaid, 0);
 
   const handleConfirmDelete = async () => {
     if (!itemToDelete) return;
@@ -144,6 +161,7 @@ function ViewStock() {
                 <Typography><strong>Order Date:</strong> {new Date(details.transaction.order_date).toLocaleDateString()}</Typography>
                 <Typography><strong>Payment Status:</strong> {details.transaction.payment_status || "-"}</Typography>
                 <Typography><strong>Total Amount:</strong> ₹{Number(details.transaction.total_amount || 0).toFixed(2)}</Typography>
+                <Typography><strong>Amount Paid:</strong> ₹{Number(details.transaction.amount_paid || 0).toFixed(2)}</Typography>
                 <Typography><strong>Description:</strong> {details.transaction.description || "-"}</Typography>
               </Box>
             </Paper>
@@ -208,6 +226,18 @@ function ViewStock() {
                   setItemToDelete(null);
                 }
               }}
+            />
+
+            <StockPaymentModal
+              stockTransactionId={stockTransactionId || ""}
+              remainingAmount={remainingAmount}
+              onPaymentSuccess={fetchDetails}
+            />
+
+            <StockPaymentDetailsModal
+              open={paymentDetailsOpen}
+              onClose={() => setPaymentDetailsOpen(false)}
+              stockTransactionId={stockTransactionId || ""}
             />
           </>
         )}

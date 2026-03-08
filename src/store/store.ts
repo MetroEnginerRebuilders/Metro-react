@@ -50,6 +50,8 @@ import monthlyExpenseDetails from "../Pages/Sidebar/Dashboard/MonthlyExpenseDeta
 import transactionLogs from "../Pages/Sidebar/TransactionLogs/TransactionLogs.slice.ts";
 import statement from "../Pages/Sidebar/Statement/Statement.slice.ts";
 import viewStock from "../Pages/Sidebar/Stock/StockList/ViewStock/ViewStock.slice.ts";
+import stockPayment from "../Pages/Sidebar/Stock/StockPayment/StockPayment.slice.ts";
+import stockPaymentDetails from "../Pages/Sidebar/Stock/StockPaymentDetails/StockPaymentDetails.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -104,6 +106,8 @@ export const store = configureStore({
    transactionLogs,
    statement,
    viewStock,
+   stockPayment,
+   stockPaymentDetails,
   },
 });
 

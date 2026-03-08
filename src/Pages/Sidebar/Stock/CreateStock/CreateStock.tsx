@@ -22,7 +22,6 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import { getShopListApi } from "../../../../service/shops";
-import { getActiveBankAccountListApi } from "../../../../service/bankAccount";
 import { getCompanyListApi } from "../../../../service/company";
 import { getModelListApi } from "../../../../service/model";
 import { getSpareListApi } from "../../../../service/spare";
@@ -36,7 +35,6 @@ function CreateStock() {
   const [loading, setLoading] = useState(false);
 
   const [shops, setShops] = useState<{ value: string; label: string }[]>([]);
-  const [bankAccounts, setBankAccounts] = useState<{ value: string; label: string }[]>([]);
   const [companies, setCompanies] = useState<{ value: string; label: string }[]>([]);
   const [models, setModels] = useState<{ value: string; label: string }[]>([]);
   const [spares, setSpares] = useState<{ value: string; label: string }[]>([]);
@@ -61,17 +59,6 @@ function CreateStock() {
         setShops(shopsResponse.data.map(shop => ({
           value: shop.shop_id,
           label: shop.shop_name
-        })));
-      }
-
-      // Fetch bank accounts
-      const bankAccountsResponse = await getActiveBankAccountListApi();
-      if (bankAccountsResponse.success && bankAccountsResponse.data) {
-        setBankAccounts(bankAccountsResponse.data.map(account => ({
-          value: account.bank_account_id,
-          label: (account.account_number || "").trim()
-            ? `${account.account_name} - ${account.account_number}`
-            : account.account_name
         })));
       }
 
@@ -320,10 +307,6 @@ function CreateStock() {
       toast.error("Please select a shop");
       return;
     }
-    if (!formState.bankAccountId) {
-      toast.error("Please select a bank account");
-      return;
-    }
     if (!formState.orderDate) {
       toast.error("Please select order date");
       return;
@@ -352,7 +335,6 @@ function CreateStock() {
       const payload = {
         shopId: formState.shopId,
         transactionTypeId: formState.transactionTypeId,
-        bankAccountId: formState.bankAccountId,
         orderDate: formState.orderDate,
         description: formState.description,
         items: formState.items.map(item => ({
@@ -402,19 +384,13 @@ function CreateStock() {
         <Box>
           <Card>
             <CardContent>
-              {/* Shop and Bank Account */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+              {/* Shop */}
+              <div className="grid grid-cols-1 gap-4 mb-4">
                 <SearchableSelect
                   label="Shop *"
                   options={shops}
                   value={formState.shopId}
                   onChange={handleSelectChange("shopId")}
-                />
-                <SearchableSelect
-                  label="Bank Account *"
-                  options={bankAccounts}
-                  value={formState.bankAccountId}
-                  onChange={handleSelectChange("bankAccountId")}
                 />
               </div>
 

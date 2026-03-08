@@ -179,6 +179,7 @@ export interface StockTransactionDetails {
   order_date: string;
   description: string;
   total_amount: number;
+  amount_paid?: number | string;
   payment_status: string;
   created_at: string;
   updated_at: string;
@@ -221,6 +222,7 @@ export interface StockTransactionByIdData {
   account_name: string;
   account_number: string;
   total_amount: string | number;
+  amount_paid?: number | string;
   payment_status: string;
   created_at: string;
   updated_at: string;
@@ -234,3 +236,66 @@ export interface StockTransactionByIdResponse {
 }
 
 export type UpdateStockResponse = StockTransactionByIdResponse;
+
+export interface StockPaymentPayload {
+  stockTransactionId: string;
+  bankAccountId: string;
+  amountPaid: number;
+  paymentDate: string;
+  remarks?: string;
+}
+
+export interface StockPaymentData {
+  stock_payment_id: string;
+  stock_transaction_id: string;
+  stock_type_id: string;
+  bank_account_id: string;
+  amount_paid: number;
+  payment_status: string;
+  payment_on: string;
+  remarks: string | null;
+  total_paid: number;
+  total_amount: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockPaymentResponse {
+  success: boolean;
+  message: string;
+  data: StockPaymentData;
+}
+
+export interface StockPaymentDetailsSummary {
+  payment_count: number;
+  total_amount: number;
+  total_paid: number;
+  balance_amount: number;
+}
+
+export interface StockPaymentDetailsItem {
+  stock_payment_id: string;
+  stock_transaction_id: string;
+  stock_type_id: string;
+  bank_account_id: string;
+  amount_paid: string | number;
+  payment_status: string;
+  payment_on: string;
+  remarks: string | null;
+  created_at: string;
+  updated_at: string;
+  account_name: string | null;
+  account_number: string | null;
+}
+
+export interface StockPaymentDetailsData {
+  stock_transaction_id: string;
+  summary: StockPaymentDetailsSummary;
+  payments: StockPaymentDetailsItem[];
+}
+
+export interface StockPaymentDetailsResponse {
+  success: boolean;
+  message: string;
+  data: StockPaymentDetailsData;
+}

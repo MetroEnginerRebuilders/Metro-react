@@ -35,6 +35,19 @@ function ViewStock() {
   const [itemToDelete, setItemToDelete] = useState<string | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [paymentDetailsOpen, setPaymentDetailsOpen] = useState(false);
+  const isReturnStock = details?.transaction?.stock_type_code === "RETURN";
+
+  const transactionTotalAmount = Number(
+    isReturnStock
+      ? details?.transaction?.credit_amount ?? details?.transaction?.total_amount ?? 0
+      : details?.transaction?.total_amount ?? 0
+  );
+
+  const transactionAmountPaid = Number(
+    isReturnStock
+      ? details?.transaction?.amount_get ?? details?.transaction?.amount_paid ?? 0
+      : details?.transaction?.amount_paid ?? 0
+  );
 
   const fetchDetails = useCallback(async () => {
     if (!stockTransactionId) {
@@ -80,8 +93,8 @@ function ViewStock() {
 
   const handlePay = () => {
     const today = new Date().toISOString().split("T")[0];
-    const totalAmount = Number(details?.transaction?.total_amount || 0);
-    const amountPaid = Number(details?.transaction?.amount_paid || 0);
+    const totalAmount = transactionTotalAmount;
+    const amountPaid = transactionAmountPaid;
     const remainingAmount = Math.max(totalAmount - amountPaid, 0);
 
     dispatch(
@@ -101,8 +114,8 @@ function ViewStock() {
     setDeleteDialogOpen(true);
   };
 
-  const totalAmount = Number(details?.transaction?.total_amount || 0);
-  const amountPaid = Number(details?.transaction?.amount_paid || 0);
+  const totalAmount = transactionTotalAmount;
+  const amountPaid = transactionAmountPaid;
   const remainingAmount = Math.max(totalAmount - amountPaid, 0);
 
   const handleConfirmDelete = async () => {
@@ -160,8 +173,8 @@ function ViewStock() {
                 <Typography><strong>Account Number:</strong> {details.transaction.account_number || "-"}</Typography>
                 <Typography><strong>Order Date:</strong> {new Date(details.transaction.order_date).toLocaleDateString()}</Typography>
                 <Typography><strong>Payment Status:</strong> {details.transaction.payment_status || "-"}</Typography>
-                <Typography><strong>Total Amount:</strong> ₹{Number(details.transaction.total_amount || 0).toFixed(2)}</Typography>
-                <Typography><strong>Amount Paid:</strong> ₹{Number(details.transaction.amount_paid || 0).toFixed(2)}</Typography>
+                <Typography><strong>{isReturnStock ? "Credit Amount" : "Total Amount"}:</strong> ₹{totalAmount.toFixed(2)}</Typography>
+                <Typography><strong>{isReturnStock ? "Amount Received" : "Amount Paid"}:</strong> ₹{amountPaid.toFixed(2)}</Typography>
                 <Typography><strong>Description:</strong> {details.transaction.description || "-"}</Typography>
               </Box>
             </Paper>
@@ -238,6 +251,7 @@ function ViewStock() {
               open={paymentDetailsOpen}
               onClose={() => setPaymentDetailsOpen(false)}
               stockTransactionId={stockTransactionId || ""}
+              isReturnStock={isReturnStock}
             />
           </>
         )}

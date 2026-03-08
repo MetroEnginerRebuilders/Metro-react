@@ -122,6 +122,7 @@ export interface PurchasedStockListItem {
   shop_name: string;
   no_of_items: number;
   total_price: number;
+  amount_paid?: number;
   purchase_date: string;
   payment_status: string;
 }
@@ -136,6 +137,34 @@ export interface PurchasedStockListResponse {
   success: boolean;
   message: string;
   data: PurchasedStockListItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalRecords: number;
+    limit: number;
+  };
+}
+
+export interface ReturnedStockListItem {
+  stock_transaction_id: string;
+  shop_name: string;
+  no_of_items: number;
+  total_price: number;
+  amount_paid: number;
+  purchase_date: string;
+  payment_status: string;
+}
+
+export interface ReturnedStockListParams {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
+export interface ReturnedStockListResponse {
+  success: boolean;
+  message: string;
+  data: ReturnedStockListItem[];
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -180,6 +209,8 @@ export interface StockTransactionDetails {
   description: string;
   total_amount: number;
   amount_paid?: number | string;
+  credit_amount?: number | string;
+  amount_get?: number | string;
   payment_status: string;
   created_at: string;
   updated_at: string;
@@ -223,6 +254,8 @@ export interface StockTransactionByIdData {
   account_number: string;
   total_amount: string | number;
   amount_paid?: number | string;
+  credit_amount?: number | string;
+  amount_get?: number | string;
   payment_status: string;
   created_at: string;
   updated_at: string;

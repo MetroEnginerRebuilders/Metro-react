@@ -16,13 +16,12 @@ import {
   Box,
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import { FiTrash2, FiEdit, FiEye } from "react-icons/fi";
+import { FiEdit, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import CommonPagination from "../../../../Components/CommonPagination";
 import Breadcrumb from "../../../../Components/Breadcrumb";
-import ConfirmationDialog from "../../../../Components/ConfirmationDialog";
-import { getStockListApi, getPurchasedStockListApi, deleteStockItemApi } from "../../../../service/stock";
-import type { StockTransactionItem, CurrentStockItem, PurchasedStockListItem } from "../../../../type/stock";
+import { getStockListApi, getPurchasedStockListApi, getReturnedStockListApi } from "../../../../service/stock";
+import type { StockTransactionItem, CurrentStockItem, PurchasedStockListItem, ReturnedStockListItem } from "../../../../type/stock";
 import { toast } from "react-toastify";
 import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 
@@ -65,26 +64,30 @@ function StockList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [stockData, setStockData] = useState<StockTransactionItem[] | CurrentStockItem[] | PurchasedStockListItem[]>([]);
+  const [stockData, setStockData] = useState<StockTransactionItem[] | CurrentStockItem[] | PurchasedStockListItem[] | ReturnedStockListItem[]>([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
     hasNextPage: false,
     hasPreviousPage: false,
   });
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [itemToDelete, setItemToDelete] = useState<string | null>(null);
-
   // Fetch stock data based on current tab
   const fetchStockData = useCallback(async () => {
     setLoading(true);
     try {
-      if (currentTab === 0) {
-        const response = await getPurchasedStockListApi({
-          page: currentPage,
-          limit: 10,
-          search: searchTerm || undefined,
-        });
+      if (currentTab === 0 || currentTab === 1) {
+        const isPurchasedTab = currentTab === 0;
+        const response = isPurchasedTab
+          ? await getPurchasedStockListApi({
+              page: currentPage,
+              limit: 10,
+              search: searchTerm || undefined,
+            })
+          : await getReturnedStockListApi({
+              page: currentPage,
+              limit: 10,
+              search: searchTerm || undefined,
+            });
 
         if (response.success) {
           setStockData(response.data || []);
@@ -97,13 +100,10 @@ function StockList() {
             });
           }
         } else {
-          toast.error(response.message || "Failed to fetch purchased stock list");
+          toast.error(response.message || `Failed to fetch ${isPurchasedTab ? "purchased" : "returned"} stock list`);
         }
       } else {
-        const stockTypeCode = currentTab === 1 ? "RETURN" : undefined;
-
         const response = await getStockListApi({
-          stockTypeCode,
           page: currentPage,
           limit: 10,
           search: searchTerm || undefined,
@@ -156,39 +156,12 @@ function StockList() {
     navigate("/stock/create");
   };
 
-  const handleDelete = (id: string) => {
-    setItemToDelete(id);
-    setTimeout(() => {
-      setDeleteDialogOpen(true);
-    }, 0);
-  };
-
   const handleViewPurchasedStock = (id: string) => {
     navigate(`/stock/view/${id}`);
   };
 
   const handleEditPurchasedStock = (id: string) => {
     navigate(`/stock/edit/${id}`);
-  };
-
-  const confirmDelete = async () => {
-    if (!itemToDelete) return;
-
-    try {
-      const response = await deleteStockItemApi(itemToDelete);
-      if (response.success) {
-        toast.success(response.message || "Stock item deleted successfully");
-        fetchStockData(); // Refresh the list
-      } else {
-        toast.error(response.message || "Failed to delete stock item");
-      }
-    } catch (error: any) {
-      console.error("Error deleting stock item:", error);
-      toast.error(error?.response?.data?.message || "Failed to delete stock item");
-    } finally {
-      setDeleteDialogOpen(false);
-      setItemToDelete(null);
-    }
   };
 
   const breadcrumbItems = [
@@ -218,7 +191,7 @@ function StockList() {
             <Table sx={{ minWidth: 650 }} size="small">
               <TableHead sx={commonTableHeadSx}>
                 <TableRow>
-                  {currentTab === 0 ? (
+                  {currentTab === 0 || currentTab === 1 ? (
                     <>
                       <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
                       <TableCell style={{ fontWeight: 'bold' }}>SHOP NAME</TableCell>
@@ -248,18 +221,18 @@ function StockList() {
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={currentTab === 0 ? 7 : currentTab === 2 ? 6 : 10} align="center">
+                    <TableCell colSpan={currentTab === 0 || currentTab === 1 ? 7 : currentTab === 2 ? 6 : 10} align="center">
                       <CircularProgress size={30} />
                     </TableCell>
                   </TableRow>
                 ) : stockData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={currentTab === 0 ? 7 : currentTab === 2 ? 6 : 10} align="center">
+                    <TableCell colSpan={currentTab === 0 || currentTab === 1 ? 7 : currentTab === 2 ? 6 : 10} align="center">
                       No data found
                     </TableCell>
                   </TableRow>
-                ) : currentTab === 0 ? (
-                  (stockData as PurchasedStockListItem[]).map((row, index) => (
+                ) : currentTab === 0 || currentTab === 1 ? (
+                  (stockData as (PurchasedStockListItem | ReturnedStockListItem)[]).map((row, index) => (
                     <TableRow
                       hover
                       key={row.stock_transaction_id}
@@ -312,7 +285,7 @@ function StockList() {
                     </TableRow>
                   ))
                 ) : (
-                  // Transaction Stock (Purchased/Returned) rendering
+                  // Transaction Stock rendering
                   (stockData as StockTransactionItem[]).map((row, index) => (
                     <TableRow
                       hover
@@ -328,17 +301,6 @@ function StockList() {
                       <TableCell>₹{Number(row.price).toFixed(2)}</TableCell>
                       <TableCell>₹{Number(row.total_price).toFixed(2)}</TableCell>
                       <TableCell>{new Date(row.order_date).toLocaleDateString()}</TableCell>
-                      <TableCell align="center">
-                        <Tooltip title="Delete">
-                          <IconButton
-                            size="small"
-                            color="error"
-                            onClick={() => handleDelete(row.stock_transaction_item_id)}
-                          >
-                            <FiTrash2 />
-                          </IconButton>
-                        </Tooltip>
-                      </TableCell>
                     </TableRow>
                   ))
                 )}
@@ -413,17 +375,6 @@ function StockList() {
           </div>
         </TabPanel>
       </div>
-
-      <ConfirmationDialog
-        open={deleteDialogOpen}
-        title="Delete Stock Item"
-        message="Are you sure you want to delete this stock item? This action cannot be undone."
-        onConfirm={confirmDelete}
-        onCancel={() => {
-          setDeleteDialogOpen(false);
-          setItemToDelete(null);
-        }}
-      />
     </div>
   );
 }

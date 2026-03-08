@@ -103,6 +103,29 @@ export const getPurchasedStockListApi = async (
   return response.data;
 };
 
+export const getReturnedStockListApi = async (
+  params: import("../type/stock").ReturnedStockListParams
+): Promise<import("../type/stock").ReturnedStockListResponse> => {
+  const token = sessionStorage.getItem("token");
+  const queryParams: any = {
+    page: params.page,
+    limit: params.limit,
+  };
+
+  if (params.search) {
+    queryParams.search = params.search;
+  }
+
+  const response = await axios.get(`${BASE_URL}/stock-transaction/return-list`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: queryParams,
+  });
+
+  return response.data;
+};
+
 export const getStockTransactionDetailsApi = async (
   stockTransactionId: string
 ): Promise<import("../type/stock").StockTransactionDetailsResponse> => {

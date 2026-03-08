@@ -17,6 +17,16 @@ export interface CreateStockRequest {
   totalAmount: number;
 }
 
+export interface UpdateStockRequest {
+  shopId: string;
+  transactionTypeId: string;
+  bankAccountId: string;
+  orderDate: string;
+  description: string;
+  items: StockItem[];
+  totalAmount: number;
+}
+
 export interface Stock {
   stock_id: string;
   shop_id: string;
@@ -107,6 +117,33 @@ export interface StockListResponse {
   };
 }
 
+export interface PurchasedStockListItem {
+  stock_transaction_id: string;
+  shop_name: string;
+  no_of_items: number;
+  total_price: number;
+  purchase_date: string;
+  payment_status: string;
+}
+
+export interface PurchasedStockListParams {
+  page: number;
+  limit: number;
+  search?: string;
+}
+
+export interface PurchasedStockListResponse {
+  success: boolean;
+  message: string;
+  data: PurchasedStockListItem[];
+  pagination?: {
+    currentPage: number;
+    totalPages: number;
+    totalRecords: number;
+    limit: number;
+  };
+}
+
 export interface DeleteStockResponse {
   success: boolean;
   message: string;
@@ -128,3 +165,72 @@ export interface StockTransactionAvailabilityResponse {
   message: string;
   data: StockTransactionAvailabilityData;
 }
+
+export interface StockTransactionDetails {
+  stock_transaction_id: string;
+  shop_id: string;
+  shop_name: string;
+  stock_type_id: string;
+  stock_type_name: string;
+  stock_type_code: string;
+  bank_account_id: string;
+  account_name: string;
+  account_number: string;
+  order_date: string;
+  description: string;
+  total_amount: number;
+  payment_status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface StockTransactionDetailsItem {
+  stock_transaction_item_id: string;
+  company_id: string;
+  company_name: string;
+  model_id: string;
+  model_name: string;
+  spare_id: string;
+  spare_name: string;
+  quantity: number;
+  price: number;
+  line_total: number;
+}
+
+export interface StockTransactionDetailsData {
+  transaction: StockTransactionDetails;
+  items: StockTransactionDetailsItem[];
+}
+
+export interface StockTransactionDetailsResponse {
+  success: boolean;
+  message: string;
+  data: StockTransactionDetailsData;
+}
+
+export interface StockTransactionByIdData {
+  stock_transaction_id: string;
+  shop_id: string;
+  shop_name: string;
+  stock_type_id: string;
+  stock_type_name: string;
+  stock_type_code: string;
+  order_date: string;
+  description: string;
+  bank_account_id: string;
+  account_name: string;
+  account_number: string;
+  total_amount: string | number;
+  payment_status: string;
+  created_at: string;
+  updated_at: string;
+  items: StockTransactionDetailsItem[];
+}
+
+export interface StockTransactionByIdResponse {
+  success: boolean;
+  message: string;
+  data: StockTransactionByIdData;
+}
+
+export type UpdateStockResponse = StockTransactionByIdResponse;

@@ -16,13 +16,13 @@ import {
   Box,
 } from "@mui/material";
 import { useState, useEffect, useCallback } from "react";
-import { FiTrash2 } from "react-icons/fi";
+import { FiTrash2, FiEdit, FiEye } from "react-icons/fi";
 import { useNavigate } from "react-router-dom";
 import CommonPagination from "../../../../Components/CommonPagination";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import ConfirmationDialog from "../../../../Components/ConfirmationDialog";
-import { getStockListApi, deleteStockItemApi } from "../../../../service/stock";
-import type { StockTransactionItem, CurrentStockItem } from "../../../../type/stock";
+import { getStockListApi, getPurchasedStockListApi, deleteStockItemApi } from "../../../../service/stock";
+import type { StockTransactionItem, CurrentStockItem, PurchasedStockListItem } from "../../../../type/stock";
 import { toast } from "react-toastify";
 import { commonTableHeadSx } from "../../../../utils/tableHeaderStyle";
 
@@ -50,13 +50,22 @@ function TabPanel(props: TabPanelProps) {
   );
 }
 
+const formatDateDDMMYYYY = (dateString: string | null | undefined): string => {
+  if (!dateString) return "-";
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}-${month}-${year}`;
+};
+
 function StockList() {
   const navigate = useNavigate();
   const [currentTab, setCurrentTab] = useState(0);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [stockData, setStockData] = useState<StockTransactionItem[] | CurrentStockItem[]>([]);
+  const [stockData, setStockData] = useState<StockTransactionItem[] | CurrentStockItem[] | PurchasedStockListItem[]>([]);
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
@@ -70,35 +79,49 @@ function StockList() {
   const fetchStockData = useCallback(async () => {
     setLoading(true);
     try {
-      let stockTypeCode: string | undefined;
-      
-      // Determine stockTypeCode based on tab
       if (currentTab === 0) {
-        stockTypeCode = "PURCHASE";
-      } else if (currentTab === 1) {
-        stockTypeCode = "RETURN";
-      }
-      // For currentTab === 2 (Current Stock), don't send stockTypeCode
-      
-      const response = await getStockListApi({
-        stockTypeCode,
-        page: currentPage,
-        limit: 10,
-        search: searchTerm || undefined,
-      });
-      
-      if (response.success) {
-        setStockData(response.data || []);
-        if (response.pagination) {
-          setPagination({
-            currentPage: response.pagination.currentPage,
-            totalPages: response.pagination.totalPages,
-            hasNextPage: response.pagination.hasNextPage,
-            hasPreviousPage: response.pagination.hasPreviousPage,
-          });
+        const response = await getPurchasedStockListApi({
+          page: currentPage,
+          limit: 10,
+          search: searchTerm || undefined,
+        });
+
+        if (response.success) {
+          setStockData(response.data || []);
+          if (response.pagination) {
+            setPagination({
+              currentPage: response.pagination.currentPage,
+              totalPages: response.pagination.totalPages,
+              hasNextPage: response.pagination.currentPage < response.pagination.totalPages,
+              hasPreviousPage: response.pagination.currentPage > 1,
+            });
+          }
+        } else {
+          toast.error(response.message || "Failed to fetch purchased stock list");
         }
       } else {
-        toast.error(response.message || "Failed to fetch stock data");
+        const stockTypeCode = currentTab === 1 ? "RETURN" : undefined;
+
+        const response = await getStockListApi({
+          stockTypeCode,
+          page: currentPage,
+          limit: 10,
+          search: searchTerm || undefined,
+        });
+
+        if (response.success) {
+          setStockData(response.data || []);
+          if (response.pagination) {
+            setPagination({
+              currentPage: response.pagination.currentPage,
+              totalPages: response.pagination.totalPages,
+              hasNextPage: response.pagination.hasNextPage,
+              hasPreviousPage: response.pagination.hasPreviousPage,
+            });
+          }
+        } else {
+          toast.error(response.message || "Failed to fetch stock data");
+        }
       }
     } catch (error: any) {
       console.error("Error fetching stock data:", error);
@@ -138,6 +161,14 @@ function StockList() {
     setTimeout(() => {
       setDeleteDialogOpen(true);
     }, 0);
+  };
+
+  const handleViewPurchasedStock = (id: string) => {
+    navigate(`/stock/view/${id}`);
+  };
+
+  const handleEditPurchasedStock = (id: string) => {
+    navigate(`/stock/edit/${id}`);
   };
 
   const confirmDelete = async () => {
@@ -187,32 +218,83 @@ function StockList() {
             <Table sx={{ minWidth: 650 }} size="small">
               <TableHead sx={commonTableHeadSx}>
                 <TableRow>
-                  <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }}>COMPANY</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }}>MODEL</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }}>SPARE NAME</TableCell>
-                  {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>SHOP</TableCell>}
-                  <TableCell style={{ fontWeight: 'bold' }}>QUANTITY</TableCell>
-                  <TableCell style={{ fontWeight: 'bold' }}>{currentTab === 2 ? 'AVG PRICE' : 'UNIT PRICE'}</TableCell>
-                  {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>TOTAL PRICE</TableCell>}
-                  {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>DATE</TableCell>}
-                  {currentTab !== 2 && <TableCell align="center" style={{ fontWeight: 'bold' }}>ACTIONS</TableCell>}
+                  {currentTab === 0 ? (
+                    <>
+                      <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>SHOP NAME</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>NO OF ITEMS</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>TOTAL PRICE</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>PURCHASE DATE</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>PAYMENT STATUS</TableCell>
+                      <TableCell align="center" style={{ fontWeight: 'bold' }}>ACTIONS</TableCell>
+                    </>
+                  ) : (
+                    <>
+                      <TableCell style={{ fontWeight: 'bold' }}>SL NO</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>COMPANY</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>MODEL</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>SPARE NAME</TableCell>
+                      {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>SHOP</TableCell>}
+                      <TableCell style={{ fontWeight: 'bold' }}>QUANTITY</TableCell>
+                      <TableCell style={{ fontWeight: 'bold' }}>{currentTab === 2 ? 'AVG PRICE' : 'UNIT PRICE'}</TableCell>
+                      {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>TOTAL PRICE</TableCell>}
+                      {currentTab !== 2 && <TableCell style={{ fontWeight: 'bold' }}>DATE</TableCell>}
+                      {currentTab === 1 && <TableCell align="center" style={{ fontWeight: 'bold' }}>ACTIONS</TableCell>}
+                    </>
+                  )}
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {loading ? (
                   <TableRow>
-                    <TableCell colSpan={currentTab === 2 ? 6 : 10} align="center">
+                    <TableCell colSpan={currentTab === 0 ? 7 : currentTab === 2 ? 6 : 10} align="center">
                       <CircularProgress size={30} />
                     </TableCell>
                   </TableRow>
                 ) : stockData.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={currentTab === 2 ? 6 : 10} align="center">
+                    <TableCell colSpan={currentTab === 0 ? 7 : currentTab === 2 ? 6 : 10} align="center">
                       No data found
                     </TableCell>
                   </TableRow>
+                ) : currentTab === 0 ? (
+                  (stockData as PurchasedStockListItem[]).map((row, index) => (
+                    <TableRow
+                      hover
+                      key={row.stock_transaction_id}
+                      sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                    >
+                      <TableCell>{(currentPage - 1) * 10 + index + 1}</TableCell>
+                      <TableCell>{row.shop_name || '-'}</TableCell>
+                      <TableCell>{row.no_of_items}</TableCell>
+                      <TableCell>₹{Number(row.total_price).toFixed(2)}</TableCell>
+                      <TableCell>{formatDateDDMMYYYY(row.purchase_date)}</TableCell>
+                      <TableCell>{row.payment_status || '-'}</TableCell>
+                      <TableCell align="center">
+                        <Box display="flex" justifyContent="center" alignItems="center" gap={1}>
+                          <Tooltip title="View">
+                            <IconButton
+                              size="small"
+                              color="primary"
+                              onClick={() => handleViewPurchasedStock(row.stock_transaction_id)}
+                            >
+                              <FiEye />
+                            </IconButton>
+                          </Tooltip>
+                          <Tooltip title="Edit">
+                            <IconButton
+                              size="small"
+                              color="secondary"
+                              onClick={() => handleEditPurchasedStock(row.stock_transaction_id)}
+                            >
+                              <FiEdit />
+                            </IconButton>
+                          </Tooltip>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))
                 ) : currentTab === 2 ? (
                   // Current Stock rendering
                   (stockData as CurrentStockItem[]).map((row, index) => (
@@ -298,30 +380,7 @@ function StockList() {
               onChange={handleTabChange}
               variant="scrollable"
               scrollButtons="auto"
-              sx={{
-                minHeight: '42px',
-                '& .MuiTabs-indicator': {
-                  backgroundColor: '#3A5795',
-                  height: '3px',
-                },
-                '& .MuiTab-root': {
-                  minHeight: '42px',
-                  fontSize: '0.9375rem',
-                  fontWeight: '600',
-                  textTransform: 'none',
-                  padding: '6px 16px',
-                  color: '#64748b',
-                  transition: 'all 0.2s ease',
-                  '&:hover': {
-                    backgroundColor: 'rgba(58, 87, 149, 0.08)',
-                    color: '#3A5795',
-                  },
-                  '&.Mui-selected': {
-                    color: '#3A5795',
-                    fontWeight: '700',
-                  },
-                },
-              }}
+              className="stock-tabs"
             >
               <Tab label="Purchased Stock" id="stock-tab-0" />
               <Tab label="Returned Stock" id="stock-tab-1" />

@@ -28,6 +28,8 @@ import Company from './Pages/ProtectedTopbar/Company/CompanyList/Company'
 import CreateStaffSalary from './Pages/ProtectedTopbar/StaffSalary/CreateStaffSalary'
 import StockList from './Pages/Sidebar/Stock/StockList/StockList'
 import CreateStock from './Pages/Sidebar/Stock/CreateStock/CreateStock'
+import ViewStock from './Pages/Sidebar/Stock/StockList/ViewStock/ViewStock'
+import EditStock from './Pages/Sidebar/Stock/EditStock/EditStock'
 import JobList from './Pages/Sidebar/Jobs/JobList/JobList'
 import InvoiceDetail from './Pages/Sidebar/Invoice/InvoiceDetail/InvoiceDetail'
 import CreateJobPage from './Pages/Sidebar/Jobs/CreateJobPage/CreateJobPage'
@@ -53,6 +55,8 @@ function App() {
           <Route path="/monthly-reports" element={<MonthlyReports />} />
           <Route path="/stock" element={<StockList />} />
           <Route path="/stock/create" element={<CreateStock />} />
+          <Route path="/stock/view/:stockTransactionId" element={<ViewStock />} />
+          <Route path="/stock/edit/:stockTransactionId" element={<EditStock />} />
           <Route path="/jobs" element={<JobList />} />
           <Route path="/jobs/create" element={<CreateJobPage />} />
           <Route path="/transaction-logs" element={<TransactionLogs />} />

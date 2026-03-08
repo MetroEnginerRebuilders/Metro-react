@@ -1,11 +1,24 @@
 import axios from "axios";
-import type { CreateStockRequest, Stock, ApiResponse, StockTransactionAvailabilityPayload, StockTransactionAvailabilityResponse } from "../type/stock";
+import type { CreateStockRequest, UpdateStockRequest, UpdateStockResponse, StockTransactionByIdResponse, Stock, ApiResponse, StockTransactionAvailabilityPayload, StockTransactionAvailabilityResponse } from "../type/stock";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
 export const createStockApi = async (data: CreateStockRequest): Promise<ApiResponse<Stock>> => {
   const token = sessionStorage.getItem("token");
   const response = await axios.post(`${BASE_URL}/stock-transaction`, data, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const updateStockApi = async (
+  stockTransactionId: string,
+  data: UpdateStockRequest
+): Promise<UpdateStockResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.put(`${BASE_URL}/stock-transaction/${stockTransactionId}`, data, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -64,6 +77,55 @@ export const getStockListApi = async (params: import("../type/stock").StockListP
     },
     params: queryParams,
   });
+  return response.data;
+};
+
+export const getPurchasedStockListApi = async (
+  params: import("../type/stock").PurchasedStockListParams
+): Promise<import("../type/stock").PurchasedStockListResponse> => {
+  const token = sessionStorage.getItem("token");
+  const queryParams: any = {
+    page: params.page,
+    limit: params.limit,
+  };
+
+  if (params.search) {
+    queryParams.search = params.search;
+  }
+
+  const response = await axios.get(`${BASE_URL}/stock-transaction/purchase-list`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params: queryParams,
+  });
+
+  return response.data;
+};
+
+export const getStockTransactionDetailsApi = async (
+  stockTransactionId: string
+): Promise<import("../type/stock").StockTransactionDetailsResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/stock-transaction/details/${stockTransactionId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  return response.data;
+};
+
+export const getStockTransactionByIdApi = async (
+  stockTransactionId: string
+): Promise<StockTransactionByIdResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/stock-transaction/${stockTransactionId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
   return response.data;
 };
 

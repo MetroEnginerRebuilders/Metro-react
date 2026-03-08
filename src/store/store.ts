@@ -36,6 +36,7 @@ import expenseList from "../Pages/Sidebar/Expense/ExpenseList/ExpenseList.slice.
 import createExpense from "../Pages/Sidebar/Expense/CreateExpense/CreateExpense.slice.ts";
 import editExpense from "../Pages/Sidebar/Expense/EditExpense/EditExpense.slice.ts";
 import createStock from "../Pages/Sidebar/Stock/CreateStock/CreateStock.slice.ts";
+import editStock from "../Pages/Sidebar/Stock/EditStock/EditStock.slice.ts";
 import createJob from "../Pages/Sidebar/Jobs/CreateJob/CreateJob.slice.ts";
 import editJob from "../Pages/Sidebar/Jobs/EditJob/EditJob.slice.ts";
 import monthlyReports from "../Pages/Sidebar/MonthlyReports/MonthlyReports.slice.ts";
@@ -48,6 +49,7 @@ import monthlyIncomeDetails from "../Pages/Sidebar/Dashboard/MonthlyIncomeDetail
 import monthlyExpenseDetails from "../Pages/Sidebar/Dashboard/MonthlyExpenseDetails.slice.ts";
 import transactionLogs from "../Pages/Sidebar/TransactionLogs/TransactionLogs.slice.ts";
 import statement from "../Pages/Sidebar/Statement/Statement.slice.ts";
+import viewStock from "../Pages/Sidebar/Stock/StockList/ViewStock/ViewStock.slice.ts";
 
 export const store = configureStore({
   reducer: {
@@ -88,6 +90,7 @@ export const store = configureStore({
    createExpense,
    editExpense,
    createStock,
+  editStock,
    createJob,
    editJob,
   monthlyReports,
@@ -100,6 +103,7 @@ export const store = configureStore({
    monthlyExpenseDetails,
    transactionLogs,
    statement,
+   viewStock,
   },
 });
 

@@ -1,1 +1,30 @@
 @import "tailwindcss";
+
+.stock-tabs {
+	min-height: 42px;
+}
+
+.stock-tabs .MuiTabs-indicator {
+	background-color: #3A5795;
+	height: 3px;
+}
+
+.stock-tabs .MuiTab-root {
+	min-height: 42px;
+	font-size: 0.9375rem;
+	font-weight: 600;
+	text-transform: none;
+	padding: 6px 16px;
+	color: #64748b;
+	transition: all 0.2s ease;
+}
+
+.stock-tabs .MuiTab-root:hover {
+	background-color: rgba(58, 87, 149, 0.08);
+	color: #3A5795;
+}
+
+.stock-tabs .MuiTab-root.Mui-selected {
+	color: #3A5795;
+	font-weight: 700;
+}

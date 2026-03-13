@@ -21,7 +21,7 @@ const editJobSlice = createSlice({
       const { field, value } = action.payload;
       state[field] = value;
     },
-    setFormData: (state, action: PayloadAction<CreateJobState>) => {
+    setFormData: (_state, action: PayloadAction<CreateJobState>) => {
       return action.payload;
     },
     resetForm: () => initialState,

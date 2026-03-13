@@ -335,6 +335,7 @@ function CreateStock() {
       const payload = {
         shopId: formState.shopId,
         transactionTypeId: formState.transactionTypeId,
+        bankAccountId: formState.bankAccountId,
         orderDate: formState.orderDate,
         description: formState.description,
         items: formState.items.map(item => ({

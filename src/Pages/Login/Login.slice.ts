@@ -14,7 +14,7 @@ const loginSlice = createSlice({
   initialState,
   reducers: {
     setLoginResponse: (state, action: PayloadAction<LoginResponse>) => {
-      state.token = action.payload.token;
+      state.token = action.payload.data.token;
     },
 
     setLogout: (state) => {

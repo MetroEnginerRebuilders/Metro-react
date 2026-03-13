@@ -16,7 +16,7 @@ const editModelSlice = createSlice({
       const { field, value } = action.payload;
       state[field] = value;
     },
-    setFormData: (state, action: PayloadAction<EditModelState>) => {
+    setFormData: (_state, action: PayloadAction<EditModelState>) => {
       return action.payload;
     },
     resetForm: () => initialState,

@@ -20,7 +20,7 @@ const editBankAccountSlice = createSlice({
       const { field, value } = action.payload;
       state[field] = value;
     },
-    setFormData: (state, action: PayloadAction<EditBankAccountState>) => {
+    setFormData: (_state, action: PayloadAction<EditBankAccountState>) => {
       return action.payload;
     },
     resetForm: () => initialState,

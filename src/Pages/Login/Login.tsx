@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAppDispatch } from "../../store/hooks";
 import { useState, type ChangeEvent, type FormEvent } from "react";
 import { LoginApi } from "../../service/AuthService";
@@ -26,8 +26,8 @@ function Login() {
         setShowPassword((prev) => !prev);
     };
 
-    const handleLogin = async (e: FormEvent) => {
-        e.preventDefault();
+    const handleLogin = async (e?: FormEvent) => {
+        if (e) e.preventDefault();
 
         const { username, password } = user;
 
@@ -67,6 +67,7 @@ function Login() {
                     </h2>
 
 
+                    <form onSubmit={(e) => { e.preventDefault(); void handleLogin(); }}>
                     {/* Username */}
                     <div className="mb-4">
                         <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -118,19 +119,18 @@ function Login() {
 
 
                     {/* Login Button */}
-                    <button onClick={(e) => handleLogin(e)} className="w-full bg-[#3A5795] text-white py-2 rounded-lg font-semibold hover:bg-[#2f467a] transition">
+                    <button type="submit" className="w-full bg-[#3A5795] text-white py-2 rounded-lg font-semibold hover:bg-[#2f467a] transition">
                         Login
                     </button>
+
+                    </form>
 
 
                     {/* Change Password */}
                     <div className="text-center mt-4">
-                        <a
-                            href="/change-password"
-                            className="text-sm text-[#3A5795] hover:underline"
-                        >
+                        <Link to="/change-password" className="text-sm text-[#3A5795] hover:underline">
                             Change Password?
-                        </a>
+                        </Link>
                     </div>
                 </div>
             </div>

@@ -169,8 +169,8 @@ function ViewStock() {
               <Box display="grid" gridTemplateColumns={{ xs: "1fr", md: "1fr 1fr" }} gap={1.25}>
                 <Typography><strong>Shop:</strong> {details.transaction.shop_name || "-"}</Typography>
                 <Typography><strong>Type:</strong> {details.transaction.stock_type_name || "-"}</Typography>
-                <Typography><strong>Bank Account:</strong> {details.transaction.account_name || "-"}</Typography>
-                <Typography><strong>Account Number:</strong> {details.transaction.account_number || "-"}</Typography>
+                {/* <Typography><strong>Bank Account:</strong> {details.transaction.account_name || "-"}</Typography>
+                <Typography><strong>Account Number:</strong> {details.transaction.account_number || "-"}</Typography> */}
                 <Typography><strong>Order Date:</strong> {new Date(details.transaction.order_date).toLocaleDateString()}</Typography>
                 <Typography><strong>Payment Status:</strong> {details.transaction.payment_status || "-"}</Typography>
                 <Typography><strong>{isReturnStock ? "Credit Amount" : "Total Amount"}:</strong> ₹{totalAmount.toFixed(2)}</Typography>

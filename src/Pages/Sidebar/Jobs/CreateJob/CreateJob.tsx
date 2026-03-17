@@ -50,14 +50,43 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
   const fetchDropdownData = async () => {
     setLoadingDropdowns(true);
     try {
-      const [customersResponse, accountsResponse] = await Promise.all([
-        getCustomerListApi({ page: 1, limit: 100 }),
+      const fetchAllCustomers = async (): Promise<Customer[]> => {
+        const limit = 200;
+        const firstPageResponse = await getCustomerListApi({ page: 1, limit });
+
+        if (!firstPageResponse.success || !firstPageResponse.data) {
+          return [];
+        }
+
+        const totalPages = firstPageResponse.pagination?.totalPages || 1;
+        const allCustomers = [...firstPageResponse.data];
+
+        if (totalPages > 1) {
+          const remainingRequests = Array.from({ length: totalPages - 1 }, (_, index) =>
+            getCustomerListApi({ page: index + 2, limit })
+          );
+
+          const remainingResponses = await Promise.all(remainingRequests);
+          remainingResponses.forEach((response) => {
+            if (response.success && response.data) {
+              allCustomers.push(...response.data);
+            }
+          });
+        }
+
+        const uniqueCustomers = Array.from(
+          new Map(allCustomers.map((customer) => [String(customer.customer_id), customer])).values()
+        );
+
+        return uniqueCustomers;
+      };
+
+      const [allCustomers, accountsResponse] = await Promise.all([
+        fetchAllCustomers(),
         getActiveBankAccountListApi(),
       ]);
 
-      if (customersResponse.success && customersResponse.data) {
-        setCustomers(customersResponse.data);
-      }
+      setCustomers(allCustomers);
 
       if (accountsResponse.success && accountsResponse.data) {
         setBankAccounts(accountsResponse.data);
@@ -75,7 +104,7 @@ const CreateJob = ({ open, onClose, onSuccess }: CreateJobProps) => {
   const customerOptions = useMemo(
     () =>
       customers.map((customer) => ({
-        value: customer.customer_id,
+        value: String(customer.customer_id),
         label: customer.customer_name,
       })),
     [customers]

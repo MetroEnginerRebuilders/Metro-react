@@ -110,7 +110,14 @@ function Sidebar() {
               type="button"
               onClick={() => {
                 localStorage.removeItem("token");
-                window.location.href = "/login";
+                try {
+                  sessionStorage.setItem('auth:logout', String(Date.now()));
+                } catch (e) {}
+                try {
+                  window.dispatchEvent(new Event('auth:logout'));
+                } catch (e) {
+                  window.location.href = "/login";
+                }
               }}
               className="w-full flex items-center gap-3 px-3 py-2 rounded-md border border-gray-200 bg-white text-red-500 hover:bg-red-50 hover:text-red-700 transition-colors"
             >

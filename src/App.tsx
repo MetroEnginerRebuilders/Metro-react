@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import './App.css'
 import { ToastContainer } from 'react-toastify'
 import Login from './Pages/Login/Login'
@@ -37,6 +38,27 @@ import MonthlyIncomeDetails from './Pages/Sidebar/Dashboard/MonthlyIncomeDetails
 import MonthlyExpenseDetails from './Pages/Sidebar/Dashboard/MonthlyExpenseDetails'
 
 function App() {
+  const navigate = useNavigate();
+
+  // Listen for global auth:logout events (dispatched by axios interceptor)
+  useEffect(() => {
+    const handler = () => navigate('/login');
+    // If an auth:logout happened before React mounted, sessionStorage will hold a flag
+    try {
+      const flag = sessionStorage.getItem('auth:logout');
+      if (flag) {
+        // Clear it and navigate
+        sessionStorage.removeItem('auth:logout');
+        navigate('/login');
+        return;
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
+
+    window.addEventListener('auth:logout', handler as EventListener);
+    return () => window.removeEventListener('auth:logout', handler as EventListener);
+  }, [navigate]);
 
   return (
     <div>

@@ -10,7 +10,21 @@ axios.interceptors.response.use(
       // Token expired or unauthorized
       sessionStorage.removeItem("token");
       sessionStorage.removeItem("user");
-      window.location.href = "/login";
+      // Mark logout in sessionStorage so the SPA can detect it even if
+      // the event fires before React mounts.
+      try {
+        sessionStorage.setItem('auth:logout', String(Date.now()));
+      } catch (e) {
+        // ignore storage errors
+      }
+
+      // Dispatch a simple Event so the React app can perform client-side navigation
+      try {
+        window.dispatchEvent(new Event("auth:logout"));
+      } catch (e) {
+        // Fallback to full navigation if dispatch fails
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }

@@ -41,6 +41,105 @@ function CreateStock() {
   const [stockTypes, setStockTypes] = useState<{ value: string; label: string; code: string }[]>([]);
   const [itemModels, setItemModels] = useState<Record<number, { value: string; label: string }[]>>({});
   const [itemSpares, setItemSpares] = useState<Record<number, { value: string; label: string }[]>>({});
+  const [companySearchTerm, setCompanySearchTerm] = useState("");
+  const [modelSearchTerm, setModelSearchTerm] = useState("");
+  const [spareSearchTerm, setSpareSearchTerm] = useState("");
+  const [companyLoading, setCompanyLoading] = useState(false);
+  const [modelLoading, setModelLoading] = useState(false);
+  const [spareLoading, setSpareLoading] = useState(false);
+
+  const fetchAllCompanies = async (search: string = "") => {
+    const allCompanies: { company_id: string; company_name: string }[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const response = await getCompanyListApi({
+        page,
+        limit: 100,
+        search: search || undefined,
+      });
+      if (!response.success) {
+        throw new Error(response.message || "Failed to fetch companies");
+      }
+
+      if (response.data) {
+        allCompanies.push(
+          ...response.data.map((company) => ({
+            company_id: company.company_id,
+            company_name: company.company_name,
+          }))
+        );
+      }
+
+      totalPages = Number(response.pagination?.totalPages) || 1;
+      page += 1;
+    } while (page <= totalPages);
+
+    return allCompanies;
+  };
+
+  const fetchAllModels = async (search: string = "") => {
+    const allModels: { model_id: string; model_name: string }[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const response = await getModelListApi({
+        page,
+        limit: 100,
+        search: search || undefined,
+      });
+      if (!response.success) {
+        throw new Error(response.message || "Failed to fetch models");
+      }
+
+      if (response.data) {
+        allModels.push(
+          ...response.data.map((model) => ({
+            model_id: model.model_id,
+            model_name: model.model_name,
+          }))
+        );
+      }
+
+      totalPages = Number(response.pagination?.totalPages) || 1;
+      page += 1;
+    } while (page <= totalPages);
+
+    return allModels;
+  };
+
+  const fetchAllSpares = async (search: string = "") => {
+    const allSpares: { spare_id: number; spare_name: string }[] = [];
+    let page = 1;
+    let totalPages = 1;
+
+    do {
+      const response = await getSpareListApi({
+        page,
+        limit: 100,
+        search: search || undefined,
+      });
+      if (!response.success) {
+        throw new Error(response.message || "Failed to fetch spares");
+      }
+
+      if (response.data) {
+        allSpares.push(
+          ...response.data.map((spare) => ({
+            spare_id: spare.spare_id,
+            spare_name: spare.spare_name,
+          }))
+        );
+      }
+
+      totalPages = Number(response.pagination?.totalPages) || 1;
+      page += 1;
+    } while (page <= totalPages);
+
+    return allSpares;
+  };
 
   useEffect(() => {
     // Fetch all dropdown data
@@ -62,32 +161,23 @@ function CreateStock() {
         })));
       }
 
-      // Fetch companies
-      const companiesResponse = await getCompanyListApi({ page: 1, limit: 100 });
-      if (companiesResponse.success && companiesResponse.data) {
-        setCompanies(companiesResponse.data.map(company => ({
-          value: company.company_id,
-          label: company.company_name
-        })));
-      }
+      const allCompanies = await fetchAllCompanies();
+      setCompanies(allCompanies.map(company => ({
+        value: company.company_id,
+        label: company.company_name
+      })));
 
-      // Fetch models
-      const modelsResponse = await getModelListApi({ page: 1, limit: 100 });
-      if (modelsResponse.success && modelsResponse.data) {
-        setModels(modelsResponse.data.map(model => ({
-          value: model.model_id,
-          label: model.model_name
-        })));
-      }
+      const allModels = await fetchAllModels();
+      setModels(allModels.map(model => ({
+        value: model.model_id,
+        label: model.model_name
+      })));
 
-      // Fetch spares
-      const sparesResponse = await getSpareListApi({ page: 1, limit: 100 });
-      if (sparesResponse.success && sparesResponse.data) {
-        setSpares(sparesResponse.data.map(spare => ({
-          value: spare.spare_id.toString(),
-          label: spare.spare_name
-        })));
-      }
+      const allSpares = await fetchAllSpares();
+      setSpares(allSpares.map(spare => ({
+        value: spare.spare_id.toString(),
+        label: spare.spare_name
+      })));
 
       // Fetch stock types
       const stockTypesResponse = await getStockTypeListApi();
@@ -112,6 +202,60 @@ function CreateStock() {
     }
   };
 
+  const fetchCompanyOptionsBySearch = async (search: string) => {
+    setCompanyLoading(true);
+    try {
+      const allCompanies = await fetchAllCompanies(search);
+      setCompanies(
+        allCompanies.map((company) => ({
+          value: company.company_id,
+          label: company.company_name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error searching companies:", error);
+      toast.error("Failed to search companies");
+    } finally {
+      setCompanyLoading(false);
+    }
+  };
+
+  const fetchModelOptionsBySearch = async (search: string) => {
+    setModelLoading(true);
+    try {
+      const allModels = await fetchAllModels(search);
+      setModels(
+        allModels.map((model) => ({
+          value: model.model_id,
+          label: model.model_name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error searching models:", error);
+      toast.error("Failed to search models");
+    } finally {
+      setModelLoading(false);
+    }
+  };
+
+  const fetchSpareOptionsBySearch = async (search: string) => {
+    setSpareLoading(true);
+    try {
+      const allSpares = await fetchAllSpares(search);
+      setSpares(
+        allSpares.map((spare) => ({
+          value: spare.spare_id.toString(),
+          label: spare.spare_name,
+        }))
+      );
+    } catch (error) {
+      console.error("Error searching spares:", error);
+      toast.error("Failed to search spares");
+    } finally {
+      setSpareLoading(false);
+    }
+  };
+
   // Fetch companies based on transaction type
   const fetchCompaniesByTransactionType = async (transactionType: string) => {
     try {
@@ -126,13 +270,11 @@ function CreateStock() {
         }
       } else {
         // Use regular company API for PURCHASE
-        const response = await getCompanyListApi({ page: 1, limit: 100 });
-        if (response.success && response.data) {
-          setCompanies(response.data.map(company => ({
-            value: company.company_id,
-            label: company.company_name
-          })));
-        }
+        const companiesResponse = await fetchAllCompanies();
+        setCompanies(companiesResponse.map(company => ({
+          value: company.company_id,
+          label: company.company_name
+        })));
       }
     } catch (error) {
       console.error("Error fetching companies:", error);
@@ -146,6 +288,42 @@ function CreateStock() {
       fetchCompaniesByTransactionType(formState.transactionType);
     }
   }, [formState.transactionType]);
+
+  useEffect(() => {
+    if (formState.transactionType === "RETURN") {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchCompanyOptionsBySearch(companySearchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [companySearchTerm, formState.transactionType]);
+
+  useEffect(() => {
+    if (formState.transactionType === "RETURN") {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchModelOptionsBySearch(modelSearchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [modelSearchTerm, formState.transactionType]);
+
+  useEffect(() => {
+    if (formState.transactionType === "RETURN") {
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      fetchSpareOptionsBySearch(spareSearchTerm);
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [spareSearchTerm, formState.transactionType]);
 
   const breadcrumbItems = [
     { label: "Home", path: "/" },
@@ -464,18 +642,24 @@ function CreateStock() {
                           options={companies}
                           value={item.companyId}
                           onChange={handleItemSelectChange(index, "companyId")}
+                          onInputChange={setCompanySearchTerm}
+                          loading={companyLoading}
                         />
                         <SearchableSelect
                           label="Model *"
                           options={formState.transactionType === "RETURN" && itemModels[index] ? itemModels[index] : models}
                           value={item.modelId}
                           onChange={handleItemSelectChange(index, "modelId")}
+                          onInputChange={setModelSearchTerm}
+                          loading={formState.transactionType === "RETURN" ? false : modelLoading}
                         />
                         <SearchableSelect
                           label="Spare *"
                           options={formState.transactionType === "RETURN" && itemSpares[index] ? itemSpares[index] : spares}
                           value={item.itemId}
                           onChange={handleItemSelectChange(index, "itemId")}
+                          onInputChange={setSpareSearchTerm}
+                          loading={formState.transactionType === "RETURN" ? false : spareLoading}
                         />
                         <TextField
                           fullWidth

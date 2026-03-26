@@ -42,7 +42,7 @@ import type {
   BankAccount,
 } from "../../../../../type/invoice";
 import type { Work } from "../../../../../type/works";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
 
 interface AddInvoiceItemsModalProps {
@@ -78,6 +78,23 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
   ]);
   const [modelsByIndex, setModelsByIndex] = useState<Record<string, ModelData[]>>({});
   const [sparesByIndex, setSparesByIndex] = useState<Record<string, SpareData[]>>({});
+  const [companyLoadingByRow, setCompanyLoadingByRow] = useState<Record<string, boolean>>({});
+  const [modelLoadingByRow, setModelLoadingByRow] = useState<Record<string, boolean>>({});
+  const [spareLoadingByRow, setSpareLoadingByRow] = useState<Record<string, boolean>>({});
+  const [workLoadingByRow, setWorkLoadingByRow] = useState<Record<string, boolean>>({});
+  const companySearchTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const modelSearchTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const spareSearchTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const workSearchTimers = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    return () => {
+      Object.values(companySearchTimers.current).forEach((timer) => clearTimeout(timer));
+      Object.values(modelSearchTimers.current).forEach((timer) => clearTimeout(timer));
+      Object.values(spareSearchTimers.current).forEach((timer) => clearTimeout(timer));
+      Object.values(workSearchTimers.current).forEach((timer) => clearTimeout(timer));
+    };
+  }, []);
   useEffect(() => {
     if (open) {
       fetchAddItemsDropdowns();
@@ -187,6 +204,32 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
     handleRowChange(tempId, "work_id", workId);
   };
 
+  const handleWorkSearchInput = (tempId: string, searchText: string) => {
+    if (workSearchTimers.current[tempId]) {
+      clearTimeout(workSearchTimers.current[tempId]);
+    }
+
+    workSearchTimers.current[tempId] = setTimeout(async () => {
+      setWorkLoadingByRow((prev) => ({ ...prev, [tempId]: true }));
+
+      try {
+        const response = await getWorkListApi({
+          page: 1,
+          limit: 200,
+          search: searchText || undefined,
+        });
+
+        if (response.success && response.data) {
+          setWorks(response.data);
+        }
+      } catch {
+        toast.error("Failed to search works");
+      } finally {
+        setWorkLoadingByRow((prev) => ({ ...prev, [tempId]: false }));
+      }
+    }, 350);
+  };
+
   const handleRemarksChange = (tempId: string, value: string) => {
     handleRowChange(tempId, "remarks", value);
   };
@@ -256,6 +299,112 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
         selectedRow.item_type_id
       );
     }
+  };
+
+  const handleCompanySearchInput = (tempId: string, searchText: string) => {
+    if (companySearchTimers.current[tempId]) {
+      clearTimeout(companySearchTimers.current[tempId]);
+    }
+
+    companySearchTimers.current[tempId] = setTimeout(async () => {
+      setCompanyLoadingByRow((prev) => ({ ...prev, [tempId]: true }));
+
+      try {
+        const response = await getStockTransactionCompaniesApi();
+        if (response.success && response.data) {
+          const keyword = searchText.trim().toLowerCase();
+          const filteredCompanies = keyword
+            ? response.data.filter((company: { company_name: string }) =>
+                company.company_name.toLowerCase().includes(keyword)
+              )
+            : response.data;
+
+          dispatch(setCompanies(filteredCompanies));
+        }
+      } catch {
+        toast.error("Failed to search companies");
+      } finally {
+        setCompanyLoadingByRow((prev) => ({ ...prev, [tempId]: false }));
+      }
+    }, 350);
+  };
+
+  const handleModelSearchInput = (
+    tempId: string,
+    companyId: string,
+    searchText: string
+  ) => {
+    if (!companyId) {
+      return;
+    }
+
+    if (modelSearchTimers.current[tempId]) {
+      clearTimeout(modelSearchTimers.current[tempId]);
+    }
+
+    modelSearchTimers.current[tempId] = setTimeout(async () => {
+      setModelLoadingByRow((prev) => ({ ...prev, [tempId]: true }));
+
+      try {
+        const response = await getStockTransactionModelsApi(companyId);
+        if (response.success && response.data) {
+          const keyword = searchText.trim().toLowerCase();
+          const filteredModels = keyword
+            ? response.data.filter((model: { model_name: string }) =>
+                model.model_name.toLowerCase().includes(keyword)
+              )
+            : response.data;
+
+          setModelsByIndex((prev) => ({
+            ...prev,
+            [tempId]: filteredModels,
+          }));
+        }
+      } catch {
+        toast.error("Failed to search models");
+      } finally {
+        setModelLoadingByRow((prev) => ({ ...prev, [tempId]: false }));
+      }
+    }, 350);
+  };
+
+  const handleSpareSearchInput = (
+    tempId: string,
+    modelId: string,
+    searchText: string
+  ) => {
+    if (!modelId) {
+      return;
+    }
+
+    if (spareSearchTimers.current[tempId]) {
+      clearTimeout(spareSearchTimers.current[tempId]);
+    }
+
+    spareSearchTimers.current[tempId] = setTimeout(async () => {
+      setSpareLoadingByRow((prev) => ({ ...prev, [tempId]: true }));
+
+      try {
+        const response = await getStockTransactionSparesApi(modelId);
+        if (response.success && response.data) {
+          const keyword = searchText.trim().toLowerCase();
+          const filteredSpares = keyword
+            ? response.data.filter((spare: { spare_name: string }) =>
+                spare.spare_name.toLowerCase().includes(keyword)
+              )
+            : response.data;
+
+          setSparesByIndex((prev) => ({
+            ...prev,
+            [tempId]: filteredSpares,
+          }));
+        }
+      } catch {
+        toast.error("Failed to search spares");
+      } finally {
+        setSpareLoadingByRow((prev) => ({ ...prev, [tempId]: false }));
+      }
+    }, 350);
   };
 
   const handleCompanyChange = async (tempId: string, companyId: string) => {
@@ -609,6 +758,12 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                           onChange={(_, newValue) => {
                             handleWorkChange(row.tempId, newValue?.work_id || "");
                           }}
+                          onInputChange={(_, inputValue, reason) => {
+                            if (reason === "input") {
+                              handleWorkSearchInput(row.tempId, inputValue);
+                            }
+                          }}
+                          loading={!!workLoadingByRow[row.tempId]}
                           disabled={loading}
                           isOptionEqualToValue={(option, value) =>
                             option.work_id === value?.work_id
@@ -676,6 +831,12 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                             newValue?.company_id || ""
                           );
                         }}
+                        onInputChange={(_, inputValue, reason) => {
+                          if (reason === "input") {
+                            handleCompanySearchInput(row.tempId, inputValue);
+                          }
+                        }}
+                        loading={!!companyLoadingByRow[row.tempId]}
                         disabled={loading}
                         isOptionEqualToValue={(option, value) =>
                           option.company_id === value?.company_id
@@ -709,6 +870,12 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                         onChange={(_, newValue) => {
                           handleModelChange(row.tempId, newValue?.model_id || "");
                         }}
+                        onInputChange={(_, inputValue, reason) => {
+                          if (reason === "input") {
+                            handleModelSearchInput(row.tempId, row.company_id, inputValue);
+                          }
+                        }}
+                        loading={!!modelLoadingByRow[row.tempId]}
                         disabled={!row.company_id || loading}
                         isOptionEqualToValue={(option, value) =>
                           option.model_id === value?.model_id
@@ -742,6 +909,12 @@ const AddInvoiceItemsModal = ({ open, onClose, onAddItems, invoiceId }: AddInvoi
                         onChange={(_, newValue) => {
                           handleSpareChange(row.tempId, newValue?.spare_id || "");
                         }}
+                        onInputChange={(_, inputValue, reason) => {
+                          if (reason === "input") {
+                            handleSpareSearchInput(row.tempId, row.model_id, inputValue);
+                          }
+                        }}
+                        loading={!!spareLoadingByRow[row.tempId]}
                         disabled={!row.model_id || loading}
                         isOptionEqualToValue={(option, value) =>
                           option.spare_id === value?.spare_id

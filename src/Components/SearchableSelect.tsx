@@ -9,6 +9,7 @@ interface SearchableSelectProps {
   label: string;
   value: string;
   onChange: (value: string) => void;
+  onInputChange?: (value: string) => void;
   options: Option[];
   loading?: boolean;
   disabled?: boolean;
@@ -21,6 +22,7 @@ const SearchableSelect = ({
   label,
   value,
   onChange,
+  onInputChange,
   options,
   loading = false,
   disabled = false,
@@ -36,10 +38,15 @@ const SearchableSelect = ({
       onChange={(_, newValue) => {
         onChange(newValue ? newValue.value : "");
       }}
+      onInputChange={(_, inputValue, reason) => {
+        if (reason === "input" && onInputChange) {
+          onInputChange(inputValue);
+        }
+      }}
       options={options}
       getOptionLabel={(option) => option.label}
       loading={loading}
-      disabled={disabled || loading}
+      disabled={disabled}
       size={size}
       renderInput={(params) => (
         <TextField

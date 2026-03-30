@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { FiEdit, FiTrash2 } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
 import { toast } from "react-toastify";
 import Breadcrumb from "../../../../Components/Breadcrumb";
 import CommonPagination from "../../../../Components/CommonPagination";
@@ -27,6 +28,7 @@ import CreateJob from "../CreateJob/CreateJob";
 import EditJob from "../EditJob/EditJob";
 
 const JobList = () => {
+    const [searchParams] = useSearchParams();
     const [searchTerm, setSearchTerm] = useState("");
     const [list, setList] = useState<Job[]>([]);
     const [loading, setLoading] = useState(false);
@@ -43,6 +45,12 @@ const JobList = () => {
         hasNextPage: boolean;
         hasPreviousPage: boolean;
     } | null>(null);
+
+    useEffect(() => {
+        const searchFromUrl = searchParams.get("search") || "";
+        setSearchTerm((previous) => (previous === searchFromUrl ? previous : searchFromUrl));
+        setCurrentPage(1);
+    }, [searchParams]);
 
     const fetchJobs = async (page: number = 1, search?: string) => {
         setLoading(true);

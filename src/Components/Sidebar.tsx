@@ -1,6 +1,7 @@
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import type { ReactElement } from "react";
+import { TextField, InputAdornment, IconButton } from "@mui/material";
 import {
   FiSearch,
   FiGrid,
@@ -19,7 +20,6 @@ import {
 } from "react-icons/fi";
 
 const tabs = [
-  { to: "/search", label: "Search", key: "search" },
   { to: "/", label: "Dashboard", key: "dashboard" },
   { to: "/master", label: "Master Data", key: "master" },
   { to: "/stock", label: "Stock", key: "stock" },
@@ -50,12 +50,36 @@ const iconsMap: Record<string, ReactElement> = {
 
 function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
   const [isOpen, setIsOpen] = useState(false);
+  const [jobSearch, setJobSearch] = useState("");
 
   useEffect(() => {
     // Close mobile sidebar when route changes
     setIsOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (location.pathname === "/jobs") {
+      const params = new URLSearchParams(location.search);
+      setJobSearch(params.get("search") || "");
+    }
+  }, [location.pathname, location.search]);
+
+  const handleJobSearch = () => {
+    const trimmedSearch = jobSearch.trim();
+    const searchParams = new URLSearchParams();
+
+    if (trimmedSearch) {
+      searchParams.set("search", trimmedSearch);
+    }
+
+    navigate({
+      pathname: "/jobs",
+      search: searchParams.toString(),
+    });
+    setIsOpen(false);
+  };
 
   return (
     <>
@@ -84,8 +108,37 @@ function Sidebar() {
       >
       <nav className="pt-2">
         <ul className="space-y-1">
+          <li className="mb-3 px-3">
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Search Job No"
+              value={jobSearch}
+              onChange={(e) => setJobSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  e.preventDefault();
+                  handleJobSearch();
+                }
+              }}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <FiSearch className="w-4 h-4 text-gray-500" />
+                  </InputAdornment>
+                ),
+                endAdornment: jobSearch.trim() ? (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={handleJobSearch} edge="end">
+                      <FiSearch className="w-4 h-4" />
+                    </IconButton>
+                  </InputAdornment>
+                ) : undefined,
+              }}
+            />
+          </li>
           {tabs.map((t, idx) => (
-            <li key={t.to} className={idx === 0 ? "mb-3" : ""}>
+            <li key={t.to}>
               <NavLink
                 to={t.to}
                 end={t.to === "/"}

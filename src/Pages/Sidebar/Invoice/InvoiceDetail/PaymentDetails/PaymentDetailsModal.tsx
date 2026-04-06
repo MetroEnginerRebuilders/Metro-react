@@ -2,10 +2,9 @@ import {
   Dialog,
   DialogTitle,
   DialogContent,
-  DialogActions,
   Box,
-  Button,
   IconButton,
+  Tooltip,
   Table,
   TableBody,
   TableCell,
@@ -16,9 +15,10 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
-import { FiX } from "react-icons/fi";
+import { FiTrash2, FiX } from "react-icons/fi";
 import { toast } from "react-toastify";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import ConfirmationDialog from "../../../../../Components/ConfirmationDialog";
 import { useAppDispatch, useAppSelector } from "../../../../../store/hooks";
 import {
   setLoading,
@@ -26,7 +26,7 @@ import {
   setError,
   clearPaymentDetails,
 } from "./PaymentDetails.slice";
-import { getPaymentDetailsApi } from "../../../../../service/invoice";
+import { deleteInvoicePaymentApi, getPaymentDetailsApi } from "../../../../../service/invoice";
 import { commonTableHeadSx } from "../../../../../utils/tableHeaderStyle";
 import { formatCurrency, formatDate } from "../../../../../utils/formatters";
 
@@ -43,15 +43,12 @@ const PaymentDetailsModal = ({
 }: PaymentDetailsModalProps) => {
   const dispatch = useAppDispatch();
   const { data, loading } = useAppSelector((state) => state.paymentDetails);
+  const [paymentToDelete, setPaymentToDelete] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteLoading, setDeleteLoading] = useState(false);
   const totalAmountValue = Number(data?.summary?.total_amount ?? 0);
 
-  useEffect(() => {
-    if (open && invoiceId) {
-      fetchPaymentDetails();
-    }
-  }, [open, invoiceId]);
-
-  const fetchPaymentDetails = async () => {
+  const fetchPaymentDetails = useCallback(async () => {
     dispatch(setLoading(true));
     try {
       const response = await getPaymentDetailsApi(invoiceId);
@@ -75,10 +72,53 @@ const PaymentDetailsModal = ({
     } finally {
       dispatch(setLoading(false));
     }
+  }, [dispatch, invoiceId]);
+
+  useEffect(() => {
+    if (open && invoiceId) {
+      fetchPaymentDetails();
+    }
+  }, [open, invoiceId, fetchPaymentDetails]);
+
+  const handleDeleteClick = (invoicePaymentId: string) => {
+    setPaymentToDelete(invoicePaymentId);
+    setDeleteDialogOpen(true);
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!paymentToDelete) return;
+
+    setDeleteLoading(true);
+    try {
+      const response = await deleteInvoicePaymentApi(paymentToDelete);
+      if (response.success) {
+        toast.success(response.message || "Invoice payment deleted successfully", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        setDeleteDialogOpen(false);
+        setPaymentToDelete(null);
+        await fetchPaymentDetails();
+      } else {
+        toast.error(response.message || "Failed to delete invoice payment", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      }
+    } catch (error: any) {
+      toast.error(error?.response?.data?.message || "Failed to delete invoice payment", {
+        position: "top-center",
+        autoClose: 3000,
+      });
+    } finally {
+      setDeleteLoading(false);
+    }
   };
 
   const handleClose = () => {
     dispatch(clearPaymentDetails());
+    setDeleteDialogOpen(false);
+    setPaymentToDelete(null);
     onClose();
   };
 
@@ -150,6 +190,7 @@ const PaymentDetailsModal = ({
                       <TableCell style={{ fontWeight: "bold" }}>Amount Paid</TableCell>
                       <TableCell style={{ fontWeight: "bold" }}>Bank Account</TableCell>
                       <TableCell style={{ fontWeight: "bold" }}>Remarks</TableCell>
+                      <TableCell style={{ fontWeight: "bold" }} align="center">Actions</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
@@ -172,6 +213,20 @@ const PaymentDetailsModal = ({
                           </Box>
                         </TableCell>
                         <TableCell>{payment.remarks || "-"}</TableCell>
+                        <TableCell align="center">
+                          <Tooltip title="Delete">
+                            <span>
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={() => handleDeleteClick(payment.invoice_payment_id)}
+                                disabled={deleteLoading}
+                              >
+                                <FiTrash2 />
+                              </IconButton>
+                            </span>
+                          </Tooltip>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -201,11 +256,21 @@ const PaymentDetailsModal = ({
           </Box>
         )}
       </DialogContent>
-      <DialogActions>
-        <Button onClick={handleClose} variant="outlined">
-          Close
-        </Button>
-      </DialogActions>
+
+      <ConfirmationDialog
+        open={deleteDialogOpen}
+        title="Delete Invoice Payment"
+        message="Are you sure you want to delete this payment record?"
+        confirmText="Delete"
+        loading={deleteLoading}
+        onConfirm={handleConfirmDelete}
+        onCancel={() => {
+          if (!deleteLoading) {
+            setDeleteDialogOpen(false);
+            setPaymentToDelete(null);
+          }
+        }}
+      />
     </Dialog>
   );
 };

@@ -264,3 +264,9 @@ export interface PaymentDetailsResponse {
   message?: string;
   data?: PaymentDetailsData;
 }
+
+export interface DeleteInvoicePaymentResponse {
+  success: boolean;
+  message?: string;
+  data?: any;
+}

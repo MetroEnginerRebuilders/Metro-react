@@ -1,6 +1,8 @@
 export interface DailyTransactionItem {
   transaction_id: string;
   reference_id: string;
+  finance_types_id?: string;
+  financeTypeName?: string;
   transaction_date: string;
   amount: number;
   description: string;

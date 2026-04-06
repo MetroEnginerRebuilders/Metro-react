@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { CreateStockRequest, UpdateStockRequest, UpdateStockResponse, StockTransactionByIdResponse, StockPaymentPayload, StockPaymentResponse, StockPaymentDetailsResponse, Stock, ApiResponse, StockTransactionAvailabilityPayload, StockTransactionAvailabilityResponse } from "../type/stock";
+import type { CreateStockRequest, UpdateStockRequest, UpdateStockResponse, StockTransactionByIdResponse, StockPaymentPayload, StockPaymentResponse, StockPaymentDetailsResponse, Stock, ApiResponse, StockTransactionAvailabilityPayload, StockTransactionAvailabilityResponse, DeleteStockPaymentResponse } from "../type/stock";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -169,6 +169,18 @@ export const getStockPaymentDetailsApi = async (
 ): Promise<StockPaymentDetailsResponse> => {
   const token = sessionStorage.getItem("token");
   const response = await axios.get(`${BASE_URL}/stock-transaction/payment/${stockTransactionId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  });
+  return response.data;
+};
+
+export const deleteStockPaymentApi = async (
+  stockPaymentId: string
+): Promise<DeleteStockPaymentResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.delete(`${BASE_URL}/stock-transaction/payment/${stockPaymentId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },

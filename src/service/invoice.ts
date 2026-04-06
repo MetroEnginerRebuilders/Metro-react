@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse, DeleteInvoiceItemResponse, MakePaymentPayload, MakePaymentResponse, BankAccount, PaymentDetailsResponse } from "../type/invoice";
+import type { Invoice, InvoiceApiResponse, GetInvoiceListParams, InvoiceDetailResponse, InvoiceDetailsApiResponse, AddInvoiceItemsRequest, AddInvoiceItemsResponse, DeleteInvoiceItemResponse, MakePaymentPayload, MakePaymentResponse, BankAccount, PaymentDetailsResponse, DeleteInvoicePaymentResponse } from "../type/invoice";
 
 const BASE_URL = import.meta.env.VITE_BASE_URL;
 
@@ -167,6 +167,21 @@ export const getPaymentDetailsApi = async (
   const token = sessionStorage.getItem("token");
   const response = await axios.get(
     `${BASE_URL}/invoice/${invoiceId}/payments`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  );
+  return response.data;
+};
+
+export const deleteInvoicePaymentApi = async (
+  invoicePaymentId: string
+): Promise<DeleteInvoicePaymentResponse> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.delete(
+    `${BASE_URL}/invoice/payment/${invoicePaymentId}`,
     {
       headers: {
         Authorization: `Bearer ${token}`,

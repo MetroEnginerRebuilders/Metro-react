@@ -332,3 +332,8 @@ export interface StockPaymentDetailsResponse {
   message: string;
   data: StockPaymentDetailsData;
 }
+
+export interface DeleteStockPaymentResponse {
+  success: boolean;
+  message: string;
+}

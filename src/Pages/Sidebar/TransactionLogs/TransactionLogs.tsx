@@ -46,6 +46,23 @@ const getTransactionKind = (description: string): "income" | "expense" | "unknow
   return "unknown";
 };
 
+const resolveTransactionKind = (
+  financeTypeName: string | null | undefined,
+  description: string | null | undefined
+): "income" | "expense" | "unknown" => {
+  const normalizedFinanceTypeName = (financeTypeName || "").trim().toLowerCase();
+
+  if (normalizedFinanceTypeName === "income") {
+    return "income";
+  }
+
+  if (normalizedFinanceTypeName === "expense") {
+    return "expense";
+  }
+
+  return getTransactionKind(description || "");
+};
+
 const formatParticulars = (description: string | null | undefined): string => {
   if (!description) {
     return "-";
@@ -76,7 +93,10 @@ function TransactionLogs() {
   const { totalIncome, totalExpense } = useMemo(() => {
     return transactions.reduce(
       (totals, item) => {
-        const transactionKind = getTransactionKind(item.description || "");
+        const transactionKind = resolveTransactionKind(
+          item.financeTypeName,
+          item.description
+        );
         if (transactionKind === "income") {
           totals.totalIncome += Number(item.amount) || 0;
         }
@@ -171,7 +191,10 @@ function TransactionLogs() {
               </TableRow>
             ) : (
               transactions.map((item, index) => {
-                const transactionKind = getTransactionKind(item.description || "");
+                const transactionKind = resolveTransactionKind(
+                  item.financeTypeName,
+                  item.description
+                );
 
                 return (
                 <TableRow key={item.transaction_id} hover>

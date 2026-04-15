@@ -137,7 +137,7 @@ function Sidebar() {
               }}
             />
           </li>
-          {tabs.map((t, idx) => (
+          {tabs.map((t) => (
             <li key={t.to}>
               <NavLink
                 to={t.to}

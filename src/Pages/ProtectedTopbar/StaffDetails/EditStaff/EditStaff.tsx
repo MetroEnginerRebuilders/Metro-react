@@ -39,12 +39,13 @@ const EditStaff = ({ open, onClose, staff, onSuccess }: EditStaffProps) => {
     if (open && staff) {
       // Format the dates to YYYY-MM-DD for the date input
       const formattedActiveDate = staff.active_date ? new Date(staff.active_date).toISOString().split('T')[0] : '';
+      const formattedInactiveDate = staff.inactive_date ? new Date(staff.inactive_date).toISOString().split('T')[0] : '';
       
       dispatch(setFormData({
         staff_name: staff.staff_name,
         salary: staff.salary,
         active_date: formattedActiveDate || today,
-        inactive_date: today,
+        inactive_date: formattedInactiveDate,
       }));
     }
   }, [open, staff, dispatch, today]);

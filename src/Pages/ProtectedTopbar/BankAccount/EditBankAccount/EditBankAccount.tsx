@@ -37,12 +37,16 @@ const EditBankAccount = ({ open, onClose, account, onSuccess }: EditBankAccountP
 
   useEffect(() => {
     if (open && account) {
+      // Format the dates to YYYY-MM-DD for the date input
+      const formattedActivateDate = account.activate_date ? new Date(account.activate_date).toISOString().split('T')[0] : '';
+      const formattedInactivateDate = account.inactivate_date ? new Date(account.inactivate_date).toISOString().split('T')[0] : '';
+      
       dispatch(setFormData({
         account_name: account.account_name,
         account_number: account.account_number,
         opening_balance: account.opening_balance,
-        activate_date: todayDate,
-        inactivate_date: todayDate,
+        activate_date: formattedActivateDate || todayDate,
+        inactivate_date: formattedInactivateDate,
       }));
     }
   }, [open, account, dispatch, todayDate]);

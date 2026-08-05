@@ -54,3 +54,16 @@ export const getActiveStaffListApi = async (params: GetStaffListParams): Promise
   });
   return response.data;
 };
+
+export const getActiveAllStaffListApi = async (
+  params?: Pick<GetStaffListParams, "search">
+): Promise<StaffApiResponse<Staff[]>> => {
+  const token = sessionStorage.getItem("token");
+  const response = await axios.get(`${BASE_URL}/staff/active/all`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+    params,
+  });
+  return response.data;
+};

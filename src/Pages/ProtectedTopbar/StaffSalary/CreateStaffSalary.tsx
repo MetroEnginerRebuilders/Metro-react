@@ -19,7 +19,7 @@ import {
   createStaffSalaryApi,
   getStaffSalaryMonthSummaryApi,
 } from "../../../service/staffSalary";
-import { getActiveStaffListApi } from "../../../service/staff";
+import { getActiveAllStaffListApi } from "../../../service/staff";
 import { getActiveBankAccountListApi } from "../../../service/bankAccount";
 import { getSalaryTypeListApi } from "../../../service/salaryType";
 import Breadcrumb from "../../../Components/Breadcrumb";
@@ -51,7 +51,7 @@ function CreateStaffSalary() {
     setLoadingDropdowns(true);
     try {
       const [staffResponse, bankResponse, salaryTypeResponse] = await Promise.all([
-        getActiveStaffListApi({ limit: 100 }),
+        getActiveAllStaffListApi({ search: "" }),
         getActiveBankAccountListApi(),
         getSalaryTypeListApi(),
       ]);

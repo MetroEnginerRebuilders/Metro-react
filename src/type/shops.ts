@@ -22,6 +22,11 @@ export interface ShopListResponse {
   pagination: Pagination;
 }
 
+export interface ShopListAllResponse {
+  success: boolean;
+  data: Shop[];
+}
+
 export interface GetShopParams {
   page?: number;
   limit?: number;

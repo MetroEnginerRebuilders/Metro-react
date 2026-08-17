@@ -22,7 +22,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate, useParams } from "react-router-dom";
 import Breadcrumb from "../../../../Components/Breadcrumb";
-import { getShopListApi } from "../../../../service/shops";
+import { getAllShopsApi } from "../../../../service/shops";
 import { getCompanyListApi } from "../../../../service/company";
 import { getModelListApi } from "../../../../service/model";
 import { getSpareListApi } from "../../../../service/spare";
@@ -62,7 +62,7 @@ function EditStock() {
 			setLoadingInitialData(true);
 			try {
 				const [shopsResponse, companiesResponse, modelsResponse, sparesResponse, stockTypesResponse, detailsResponse] = await Promise.all([
-					getShopListApi({ page: 1, limit: 100 }),
+					getAllShopsApi(),
 					getCompanyListApi({ page: 1, limit: 100 }),
 					getModelListApi({ page: 1, limit: 100 }),
 					getSpareListApi({ page: 1, limit: 100 }),

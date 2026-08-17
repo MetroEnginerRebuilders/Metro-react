@@ -21,7 +21,7 @@ import { useState, useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import Breadcrumb from "../../../../Components/Breadcrumb";
-import { getShopListApi } from "../../../../service/shops";
+import { getAllShopsApi } from "../../../../service/shops";
 import { getCompanyListApi } from "../../../../service/company";
 import { getModelListApi } from "../../../../service/model";
 import { getSpareListApi } from "../../../../service/spare";
@@ -153,7 +153,7 @@ function CreateStock() {
   const fetchDropdownData = async () => {
     try {
       // Fetch shops
-      const shopsResponse = await getShopListApi({ page: 1, limit: 100 });
+      const shopsResponse = await getAllShopsApi();
       if (shopsResponse.success && shopsResponse.data) {
         setShops(shopsResponse.data.map(shop => ({
           value: shop.shop_id,

@@ -1,4 +1,4 @@
-import type { GetShopParams, ShopListResponse,  DeleteShopResponse, ShopRequest, ShopResponse } from "../type/shops";
+import type { GetShopParams, ShopListResponse, ShopListAllResponse, DeleteShopResponse, ShopRequest, ShopResponse } from "../type/shops";
 import { commonApi } from "./commonStructure";
 
 export const getShopListApi = async (
@@ -15,6 +15,16 @@ export const getShopListApi = async (
         search: params.search,
       },
     } : undefined
+  );
+
+  return response.data;
+};
+
+export const getAllShopsApi = async (): Promise<ShopListAllResponse> => {
+  const response = await commonApi<ShopListAllResponse>(
+    "GET",
+    "/shop/all",
+    null
   );
 
   return response.data;
